@@ -1,5 +1,7 @@
 
 
+
+
 public class Transform {
 	public Vec3 translation;
 	public Mat3 rot;
@@ -60,5 +62,8 @@ public class Transform {
 		m.m[3] =  Math.sin(roll);
 		m.m[4] =  Math.cos(roll);
 		return m;
+	}
+	public String toString(){
+		return "("+translation.x+", "+translation.y+", "+translation.z+")";
 	}
 }
