@@ -95,15 +95,17 @@ public class RaytracedGame extends Game{
 				double px = (double)(x-cx);
 				double py = (double)(cy-y);
 
-				Point p = new Point(cam.rot.transform(new Vec3(px, py, -focalLength).normalize()).add(cam.translation),.01,
+				Vec3 vector = cam.inv.transform(new Vec3(px, py, -focalLength).normalize());
+
+				Point p = new Point(vector.add(origin),.01,
 					new Color((256*x)/width, (256*y)/height, 0)
 				);
 				points.add(p);
-				if (null == null) continue;
-				Vec3 vector = p.point.sub(origin);
+				
+				
 				Vec3 intersect = null;
 				for (Triangle tri : env.mesh.triangles()){
-					Vec3 inter = tri.getIntersection(vector, origin);
+					Vec3 inter = tri.getIntersection(origin, vector);
 					if (inter == null) continue;
 					if (intersect == null || origin.dist(intersect) > origin.dist(inter)){
 						intersect = inter;
@@ -111,6 +113,7 @@ public class RaytracedGame extends Game{
 				}
 				if (intersect == null) continue;
 				int magnitude = (int) (255 * cam.translation.dist(intersect));
+				magnitude = Math.max(0, Math.min(255, magnitude));
 				int[] color = {
 					magnitude,
 					0,

@@ -6,7 +6,7 @@ public class Main {
 	public static void main(String[] args){
 		Environment env = new Environment("lamp");
 		runGame(new RasterizedGame(512, 512, Math.PI/2, env), 30);
-		runGame(new RaytracedGame(512, 512, Math.PI/2, env), 20);
+		runGame(new RaytracedGame(512, 512, Math.PI/2, env), 30);
 	}
 	public static Thread runGame(final Game game, final double fps){
 		Thread t1 = new Thread(() -> {

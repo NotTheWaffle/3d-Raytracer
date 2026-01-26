@@ -105,7 +105,7 @@ public final class Triangle implements Serializable{
 	private static double edge(int x1, int y1, int x2, int y2, int x, int y) {
 		return (x - x1) * (y2 - y1) - (y - y1) * (x2 - x1);
 	}
-	public Vec3 getIntersection(Vec3 rayVector, Vec3 rayOrigin){
+	public Vec3 getIntersection(Vec3 rayOrigin, Vec3 rayVector){
 
 		final double EPSILON = 1e-4;
 

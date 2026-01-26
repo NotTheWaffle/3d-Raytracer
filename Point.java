@@ -24,7 +24,7 @@ public class Point {
 		int screenY = (int)(-focalLength * p.y / p.z) + cy;
 
 
-		int radius = (int) (focalLength * (this.radius / -p.z));
+		int radius = Math.max(1,(int) (focalLength * (this.radius / -p.z)));
 
 		int minX = Math.max(0, screenX-radius);
 		int maxX = Math.min(zBuffer.length - 1, screenX+radius);
