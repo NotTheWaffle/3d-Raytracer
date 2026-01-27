@@ -1,22 +1,21 @@
 
+import Math.Vec3;
 import java.awt.Color;
 
-import Math.Vec3;
-
-public class Sphere {
+public class Sphere extends PhysicalObject{
 	public final Vec3 point;
 	public final Color color;
 	public final double radius;
-	public Sphere(Vec3 p, double radius){
-		this.point = p;
-		this.color = new Color((int)(Math.random()*16777216));
-		this.radius = radius;
+	public Sphere(Vec3 p, double radius, Material material){
+		this(p, radius, new Color((int)(Math.random()*16777216)), material);
 	}
-	public Sphere(Vec3 p, double radius, Color c){
+	public Sphere(Vec3 p, double radius, Color c, Material material){
+		super(Material.LIGHT);
 		this.point = p;
 		this.color = c;
 		this.radius = radius;
 	}
+	@Override
 	public void render(java.awt.image.WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam) {
 		Vec3 p = cam.applyTo(this.point);
 		if (p.z < 0) return;
@@ -53,7 +52,8 @@ public class Sphere {
 			}
 		}
 	}
-	public Vec3 getIntersection(Vec3 rayOrigin, Vec3 rayVector){
+	@Override
+	public Intersection getIntersection(Vec3 rayOrigin, Vec3 rayVector){
 		Vec3 l = rayOrigin.sub(point);
 		
 		double a = rayVector.dot(rayVector);
@@ -75,7 +75,7 @@ public class Sphere {
 		if (t1 > 0 && t1 < t) t = t1;
 
 		if (t == Double.POSITIVE_INFINITY) return null;
-
-		return rayOrigin.add(rayVector.mul(t));
+		Vec3 intersectionPoint = rayOrigin.add(rayVector.mul(t));
+		return new Intersection(intersectionPoint, this, intersectionPoint.sub(point).normalize());
 	}
 }

@@ -1,18 +1,17 @@
 
-import java.awt.Color;
-import java.io.Serializable;
-
 import Math.Vec3;
+import java.awt.Color;
 
-public final class Triangle implements Serializable{
+public final class Triangle extends PhysicalObject{
 	public final Vec3 p1;
 	public final Vec3 p2;
 	public final Vec3 p3;
-	private transient final Vec3 normal;
-	public transient final Color underlyingColor;
-	public transient Color color;
+	private final Vec3 normal;
+	public final Color underlyingColor;
+	public Color color;
 	
-	public Triangle(Vec3 p1, Vec3 p2, Vec3 p3){
+	public Triangle(Vec3 p1, Vec3 p2, Vec3 p3, Material material){
+		super(material);
 		this.p1 = p1;
 		this.p2 = p2;
 		this.p3 = p3;
@@ -20,8 +19,8 @@ public final class Triangle implements Serializable{
 		this.underlyingColor = Color.white;
 		recolor(new Vec3(0, 1, 0).normalize());
 	}
-	public Triangle(int i1, int i2, int i3, Vec3[] points){
-		this(points[i1], points[i2], points[i3]);
+	public Triangle(int i1, int i2, int i3, Vec3[] points, Material material){
+		this(points[i1], points[i2], points[i3], material);
 	}
 	
 	public void recolor(Vec3 light){
@@ -103,7 +102,7 @@ public final class Triangle implements Serializable{
 	private static double edge(int x1, int y1, int x2, int y2, int x, int y) {
 		return (x - x1) * (y2 - y1) - (y - y1) * (x2 - x1);
 	}
-	public Vec3 getIntersection(Vec3 rayOrigin, Vec3 rayVector){
+	public Intersection getIntersection(Vec3 rayOrigin, Vec3 rayVector){
 
 		final double EPSILON = 1e-4;
 
@@ -135,7 +134,7 @@ public final class Triangle implements Serializable{
 
 		double t = f * edge2.dot(q);
 		if (t > EPSILON) {
-			return rayVector.mul(t).add(rayOrigin);
+			return new Intersection(rayVector.mul(t).add(rayOrigin), this, this.normal);
 		} else {
 			return null;
 		}

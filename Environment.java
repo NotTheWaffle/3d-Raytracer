@@ -8,10 +8,10 @@ import java.util.List;
 
 public class Environment{
 	public final Mesh mesh;
-	public final List<Sphere> points;
-	public final List<Sphere> lights;
+	public final List<Point> points;
+	public final List<PhysicalObject> lights;
 	public Environment(String filename){
-		this.mesh = loadMesh("Models/"+filename+".obj").mesh;
+		this.mesh = loadObj("Models/"+filename+".obj");
 		
 		this.points = new ArrayList<>();
 		this.lights = new ArrayList<>();
@@ -26,7 +26,7 @@ public class Environment{
 		this.points = new ArrayList<>();
 		this.lights = new ArrayList<>();
 	}
-	public static Environment loadMesh(String filename){
+	public static Mesh loadObj(String filename, boolean rescale, Material material){
 		System.out.println("Loading "+filename+"... ");
 		List<Vec3> points = new ArrayList<>();
 		List<Triangle> triangles = new ArrayList<>();
@@ -65,37 +65,42 @@ public class Environment{
 						pointBuffer.add(points.get(index-1));
 					}
 					while (pointBuffer.size()>2){
-						triangles.add(new Triangle(0, 1, 2, pointBuffer.toArray(Vec3[]::new)));
+						triangles.add(new Triangle(0, 1, 2, pointBuffer.toArray(Vec3[]::new), material));
 						pointBuffer.remove(1);
 					}
 				}
 			}
 		} catch (IOException e){
 			System.out.println("Failed to load");
-			return new Environment(new Mesh(new Vec3[0], new Triangle[0]));
+			return new Mesh(new Vec3[0], new Triangle[0]);
 		}
 		System.out.println("  Loaded "+triangles.size()+" triangles");
 		System.out.println("  Loaded "+points.size()+" points");
 		System.out.println(filename+" successfully loaded");
+		if (rescale){
+			double xrange = maxX-minX;
+			double yrange = maxY-minY;
+			double zrange = maxZ-minZ;
+			double maxRange = Math.max(Math.max(xrange,yrange),zrange);
 
-		double xrange = maxX-minX;
-		double yrange = maxY-minY;
-		double zrange = maxZ-minZ;
-		double maxRange = Math.max(Math.max(xrange,yrange),zrange);
+			double scale = 1/maxRange;
 
-		double scale = 1/maxRange;
+			xrange *= scale;
+			yrange *= scale;
+			zrange *= scale;
 
-		xrange *= scale;
-		yrange *= scale;
-		zrange *= scale;
-
-		for (Vec3 point : points){
-			point.x = (point.x - minX)*scale-xrange/2;
-			point.y = (point.y - minY)*scale-yrange/2;
-			point.z = (point.z - minZ)*scale-zrange/2;
+			for (Vec3 point : points){
+				point.x = (point.x - minX)*scale-xrange/2;
+				point.y = (point.y - minY)*scale-yrange/2;
+				point.z = (point.z - minZ)*scale-zrange/2;
+			}
 		}
+		
 		Triangle[] rTriangles = triangles.toArray(Triangle[]::new);
 		Vec3[] rPoints = points.toArray(Vec3[]::new);
-		return new Environment(new Mesh(rPoints, rTriangles));
+		return new Mesh(rPoints, rTriangles);
+	}
+	public static Mesh loadObj(String filename){
+		return loadObj(filename, true, Material.SOLID);
 	}
 }

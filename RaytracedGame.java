@@ -17,8 +17,6 @@ public class RaytracedGame extends Game{
 	public final double speed = .02;
 	public final double rotSpeed = .03;
 
-	private Vec3 light;
-
 	private final Transform cam;
 
 	private final Environment env;
@@ -30,7 +28,6 @@ public class RaytracedGame extends Game{
 
 	public RaytracedGame(int width, int height, double fov, Environment env){
 		super(width, height);
-		this.light = new Vec3(0, 1, 1).normalize();
 		
 		this.env = env;
 		
@@ -84,7 +81,7 @@ public class RaytracedGame extends Game{
 		WritableRaster raster = image.getRaster();
 		Vec3 light = cam.getForwardVector();
 		clearZBuffer();
-		for (Triangle triangle : env.mesh.triangles()){
+		for (Triangle triangle : env.mesh.triangles){
 			triangle.recolor(light);
 			triangle.render(raster, focalLength, cx, cy, zBuffer, cam);
 		}
@@ -92,18 +89,10 @@ public class RaytracedGame extends Game{
 		Vec3 origin = cam.translation;
 		Vec3 vector = cam.getForwardVector().normalize();
 		
-		Vec3 intersection = null;
-		for (Triangle tri : env.mesh.triangles()){
-			Vec3 localIntersection = tri.getIntersection(vector, origin);
-			if (localIntersection == null) continue;
-			if (intersection == null || origin.dist(intersection) > origin.dist(localIntersection)){
-				intersection = localIntersection;
-			}
-		}
-		for (Sphere p : env.lights){
+		for (PhysicalObject p : env.lights){
 			p.render(raster, focalLength, cx, cy, zBuffer, cam);
 		}
-		new Sphere(new Vec3(0, 0, 0), .01).render(raster, focalLength, cx, cy, zBuffer, cam);
+		new Point(new Vec3(0, 0, 0), 1).render(raster, focalLength, cx, cy, zBuffer, cam);
 		
 		g2d.drawImage(image, 0, 0, null);
 	
@@ -127,10 +116,10 @@ public class RaytracedGame extends Game{
 			clearZBuffer();
 		
 			env.points.clear();
-			List<Sphere> points = env.points;
-			final int incr = 4;
+			List<Point> points = env.points;
+			final int incr = 2;
 			
-			points.add(new Sphere(cam.translation, .01, Color.white));
+			points.add(new Point(cam.translation, 1, Color.white));
 
 			Vec3 origin = cam.translation;
 			for (int x = 0; x < width; x+=incr){
@@ -140,7 +129,7 @@ public class RaytracedGame extends Game{
 
 					Vec3 vector = cam.rot.transform(new Vec3(px, py, focalLength).normalize());
 
-					Sphere p = new Sphere(vector.add(origin),.01,
+					Point p = new Point(vector.add(origin),1,
 						new Color((256*x)/width, (256*y)/height, 0)
 					);
 					points.add(p);
@@ -152,7 +141,6 @@ public class RaytracedGame extends Game{
 						}
 					}
 				}
-				System.out.println(x);
 			}
 
 			g2d.drawImage(image, 0, 0, null);

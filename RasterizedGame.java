@@ -84,26 +84,15 @@ public class RasterizedGame extends Game{
 		WritableRaster raster = image.getRaster();
 		Vec3 light = cam.getForwardVector();
 		clearZBuffer();
-		for (Triangle triangle : env.mesh.triangles()){
+		for (Triangle triangle : env.mesh.triangles){
 			triangle.recolor(light);
 			triangle.render(raster, focalLength, cx, cy, zBuffer, cam);
 		}
-		
-		Vec3 origin = cam.translation;
-		Vec3 vector = cam.getForwardVector().normalize();
-		
-		Vec3 intersection = null;
-		for (Triangle tri : env.mesh.triangles()){
-			Vec3 localIntersection = tri.getIntersection(vector, origin);
-			if (localIntersection == null) continue;
-			if (intersection == null || origin.dist(intersection) > origin.dist(localIntersection)){
-				intersection = localIntersection;
-			}
-		}
-		for (Sphere p : env.points){
+
+		for (Point p : env.points){
 			p.render(raster, focalLength, cx, cy, zBuffer, cam);
 		}
-		new Sphere(new Vec3(0, 0, 0), .01).render(raster, focalLength, cx, cy, zBuffer, cam);
+		new Point(new Vec3(0, 0, 0), 1).render(raster, focalLength, cx, cy, zBuffer, cam);
 		
 		g2d.drawImage(image, 0, 0, null);
 		long renderTime = System.nanoTime()-renderStart;

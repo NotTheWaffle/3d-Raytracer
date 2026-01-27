@@ -1,21 +1,12 @@
 import Math.Vec3;
 
 public class Intersection {
-	public final Material mat;
 	public final Vec3 pos;
-	public final Triangle collisionEntity;
-	public Intersection(Material mat, Vec3 pos){
-		this.mat = mat;
+	public final PhysicalObject object;
+	public final Vec3 normal;
+	public Intersection(Vec3 pos, PhysicalObject collisionEntity, Vec3 normal){
 		this.pos = pos;
-		this.collisionEntity = null;
-	}
-	public Intersection(Vec3 pos, Triangle tri){
-		this.pos = pos;
-		this.mat = Material.SOLID;
-		this.collisionEntity = tri;
-	}
-	public enum Material{
-		LIGHT,
-		SOLID
+		this.object = collisionEntity;
+		this.normal = normal;
 	}
 }

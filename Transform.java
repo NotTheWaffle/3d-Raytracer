@@ -11,7 +11,7 @@ public class Transform {
 		this.inv = rot.transpose();
 	}
 	public Vec3 getForwardVector(){
-		return new Vec3(rot.m[2], rot.m[5], rot.m[8]).normalize();
+		return new Vec3(rot.m02, rot.m12, rot.m22).normalize();
 	}
 
 	public Vec3 applyTo(Vec3 point){
@@ -40,30 +40,33 @@ public class Transform {
 	}
 	
 	public static Mat3 rotationX(double pitch) {
-		Mat3 m = Mat3.identity();
-		m.m[4] =  Math.cos(pitch);
-		m.m[5] = -Math.sin(pitch);
-		m.m[7] =  Math.sin(pitch);
-		m.m[8] =  Math.cos(pitch);
-		return m;
+		double c = Math.cos(pitch);
+		double s = Math.sin(pitch);
+		return new Mat3(
+			1, 0, 0,
+			0, c, -s,
+			0, s, c
+		);
 	}
 
 	public static Mat3 rotationY(double yaw) {
-		Mat3 m = Mat3.identity();
-		m.m[0] =  Math.cos(yaw);
-		m.m[2] =  Math.sin(yaw);
-		m.m[6] = -Math.sin(yaw);
-		m.m[8] =  Math.cos(yaw);
-		return m;
+		double c = Math.cos(yaw);
+		double s = Math.sin(yaw);
+		return new Mat3(
+			c, 0, s,
+			0, 1, 0,
+			-s, 0, c
+		);
 	}
 
 	public static Mat3 rotationZ(double roll) {
-		Mat3 m = Mat3.identity();
-		m.m[0] =  Math.cos(roll);
-		m.m[1] = -Math.sin(roll);
-		m.m[3] =  Math.sin(roll);
-		m.m[4] =  Math.cos(roll);
-		return m;
+		double c = Math.cos(roll);
+		double s = Math.sin(roll);
+		return new Mat3(
+			c, -s, 0,
+			s, c, 0,
+			0, 0, 1
+		);
 	}
 	@Override
 	public String toString(){
