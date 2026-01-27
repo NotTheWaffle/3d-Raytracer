@@ -12,6 +12,7 @@ public class Vec3 implements Serializable{
 
 	public Vec3 normalize(){
 		double r = Math.sqrt(x*x + y*y + z*z);
+		if (r == 0) return new Vec3(0, 0, 0);
 		return new Vec3(
 			x/r,
 			y/r,

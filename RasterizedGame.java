@@ -28,7 +28,7 @@ public class RasterizedGame extends Game{
 		this.env = env;
 		
 		cam = new Transform();
-		cam.translate(cam.getForwardVector().mul(-1));
+		cam.translateAbsolute(cam.getForwardVector().mul(-1));
 
 		
 		this.focalLength = (double) height / (2 * Math.tan(fov/2));
@@ -37,7 +37,7 @@ public class RasterizedGame extends Game{
 
 	@Override
 	public String name(){
-		return "Game 3d";
+		return "Rasterized 3d";
 	}
 	public static long logicTime;
 	@Override
@@ -79,14 +79,10 @@ public class RasterizedGame extends Game{
 		long renderStart = System.nanoTime();
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		WritableRaster raster = image.getRaster();
-
-		Vec3 l = cam.getForwardVector();
-		for (Triangle t : env.mesh.triangles()){
-			t.recolor(l);
-		}
-
+		Vec3 light = cam.getForwardVector();
 		clearZBuffer();
 		for (Triangle triangle : env.mesh.triangles()){
+			triangle.recolor(light);
 			triangle.render(raster, focalLength, cx, cy, zBuffer, cam);
 		}
 		
@@ -110,14 +106,9 @@ public class RasterizedGame extends Game{
 		long renderTime = System.nanoTime()-renderStart;
 		g2d.drawString("Render (ms):"+renderTime/1_000_000.0,0,20);
 		g2d.drawString("Logic  (ms):"+logicTime/1_000_000.0,0,40);
-		
-		g2d.drawString("pos + forwardvec = ",0, 60);
-		g2d.drawString(cam.translation.toString()+"+"+cam.getForwardVector().toString()+"="+cam.translation.add(cam.getForwardVector()).toString(), 0, 80);
-		g2d.drawString("  "+cam.applyTo(cam.translation.add(cam.getForwardVector())).toString(), 0, 100);
-		g2d.drawString(new Vec3(0, 0, 0).toString(), 0, 120);
-		g2d.drawString("  "+cam.applyTo(new Vec3(0, 0, 0)).toString(), 0, 140);
-		g2d.drawString("Cam Pos:"+cam.translation.toString(), 0, 200);
-		g2d.drawString("Cam Rot:"+cam.rot.toString(), 0, 220);
-		g2d.drawString("Cam Inv:"+cam.inv.toString(), 0, 240);
+	
+		g2d.drawString(Math.random()+"", 0, 100);
+		g2d.drawString("Cam Pos:"+cam.translation.toString(), 0, 60);
+		g2d.drawString("Cam Rot:"+cam.rot.toString(), 0, 80);
 	}
 }

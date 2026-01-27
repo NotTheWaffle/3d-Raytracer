@@ -14,25 +14,26 @@ public class RaytracedGame extends Game{
 	public final double speed = .02;
 	public final double rotSpeed = .03;
 
-	private final Vec3 light;
+	private Vec3 light;
 
-	private Transform cam;
+	private final Transform cam;
 
-	Environment env;
+	private final Environment env;
 	
+	public static long logicTime;
+
 	int cx = width / 2;
 	int cy = height / 2;
 
 	public RaytracedGame(int width, int height, double fov, Environment env){
 		super(width, height);
-		this.light = new Vec3(0, 1, -1).normalize();
+		this.light = new Vec3(0, 1, 1).normalize();
 		
 		this.env = env;
 		
-		
 		cam = new Transform();
-		cam.rotateZ(Math.PI);
-		cam.translate(0, 0, 1);
+		cam.translateAbsolute(cam.getForwardVector().mul(-1));
+
 		
 		this.focalLength = (double) height / (2 * Math.tan(fov/2));
 		zBuffer = new double[width][height];
@@ -42,23 +43,24 @@ public class RaytracedGame extends Game{
 	public String name(){
 		return "Raytraced 3d";
 	}
-	public static long logicTime;
+	
 	@Override
 	public void tick(){
 		long start = System.nanoTime();
-		if (input.keys['W']) 				cam.translate(0, 0, -speed);
-		if (input.keys['A']) 				cam.translate(speed, 0, 0);
-		if (input.keys['S']) 				cam.translate(0, 0, speed);
-		if (input.keys['D']) 				cam.translate(-speed, 0, 0);
-		if (input.keys[' ']) 				cam.translate(0, -speed, 0);
-		if (input.keys[Input.SHIFT]) 		cam.translate(0, speed, 0);
-	
-		if (input.keys[Input.UP_ARROW]) 	cam.rotateX( rotSpeed);
-		if (input.keys[Input.DOWN_ARROW]) 	cam.rotateX(-rotSpeed);
-		if (input.keys[Input.LEFT_ARROW]) 	cam.rotateY( rotSpeed);
-		if (input.keys[Input.RIGHT_ARROW]) 	cam.rotateY(-rotSpeed);
-		if (input.keys['Q']) 				cam.rotateZ(-rotSpeed);
-		if (input.keys['E']) 				cam.rotateZ( rotSpeed);
+
+		if (input.keys['W']) 				{render = null; cam.translate(0, 0, speed);}
+		if (input.keys['A']) 				{render = null; cam.translate(-speed, 0, 0);}
+		if (input.keys['S']) 				{render = null; cam.translate(0, 0, -speed);}
+		if (input.keys['D']) 				{render = null; cam.translate(speed, 0, 0);}
+		if (input.keys[' ']) 				{render = null; cam.translate(0, speed, 0);}
+		if (input.keys[Input.SHIFT]) 		{render = null; cam.translate(0, -speed, 0);}
+		if (input.keys[Input.UP_ARROW]) 	{render = null; cam.rotateX( rotSpeed);}
+		if (input.keys[Input.DOWN_ARROW]) 	{render = null; cam.rotateX(-rotSpeed);}
+		if (input.keys[Input.LEFT_ARROW]) 	{render = null; cam.rotateY( rotSpeed);}
+		if (input.keys[Input.RIGHT_ARROW]) 	{render = null; cam.rotateY(-rotSpeed);}
+		if (input.keys['Q']) 				{render = null; cam.rotateZ(-rotSpeed);}
+		if (input.keys['E']) 				{render = null; cam.rotateZ( rotSpeed);}
+
 		logicTime = System.nanoTime()-start;
 	}
 
@@ -74,70 +76,90 @@ public class RaytracedGame extends Game{
 			Arrays.fill(zBuffer[x], Double.POSITIVE_INFINITY);
 		}
 	}
-	
-	@Override
-	public void updateFrame(Graphics2D g2d){
-		long renderStart = System.nanoTime();
+	private void renderRasterized(Graphics2D g2d){
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		WritableRaster raster = image.getRaster();
-
+		Vec3 light = cam.getForwardVector();
 		clearZBuffer();
-	
-		env.points.clear();
-		List<Point> points = env.points;
-		final int incr = 16 ;
+		for (Triangle triangle : env.mesh.triangles()){
+			triangle.recolor(light);
+			triangle.render(raster, focalLength, cx, cy, zBuffer, cam);
+		}
 		
-		points.add(new Point(cam.translation, .01, Color.white));
-
 		Vec3 origin = cam.translation;
-		for (int x = 0; x < width; x+=incr){
-			for (int y = 0; y < height; y+=incr){
-				double px = (double)(x-cx);
-				double py = (double)(cy-y);
-
-				Vec3 vector = cam.inv.transform(new Vec3(px, py, -focalLength).normalize());
-
-				Point p = new Point(vector.add(origin),.01,
-					new Color((256*x)/width, (256*y)/height, 0)
-				);
-				points.add(p);
-				
-				
-				Vec3 intersect = null;
-				for (Triangle tri : env.mesh.triangles()){
-					Vec3 inter = tri.getIntersection(origin, vector);
-					if (inter == null) continue;
-					if (intersect == null || origin.dist(intersect) > origin.dist(inter)){
-						intersect = inter;
-					}
-				}
-				if (intersect == null) continue;
-				int magnitude = (int) (255 * cam.translation.dist(intersect));
-				magnitude = Math.max(0, Math.min(255, magnitude));
-				int[] color = {
-					magnitude,
-					0,
-					0,
-					255,
-				};
-				for (int dx = 0; dx < incr; dx++){
-					for (int dy = 0; dy < incr; dy++){
-						raster.setPixel(x+dx, y+dy, color);
-					}
-				}
+		Vec3 vector = cam.getForwardVector().normalize();
+		
+		Vec3 intersection = null;
+		for (Triangle tri : env.mesh.triangles()){
+			Vec3 localIntersection = tri.getIntersection(vector, origin);
+			if (localIntersection == null) continue;
+			if (intersection == null || origin.dist(intersection) > origin.dist(localIntersection)){
+				intersection = localIntersection;
 			}
 		}
-
-
-		//for (Point point : points){
-		//	point.render(raster, focalLength, cx, cy, zBuffer, cam);
-		//}
-
-		g2d.drawImage(image, 0, 0, null);
+		for (Point p : env.lights){
+			p.render(raster, focalLength, cx, cy, zBuffer, cam);
+		}
+		new Point(new Vec3(0, 0, 0), .01).render(raster, focalLength, cx, cy, zBuffer, cam);
 		
-		long renderTime = System.nanoTime()-renderStart;
-		g2d.drawString("Render (ms):"+renderTime/1_000_000.0,0,20);
-		g2d.drawString("Logic  (ms):"+logicTime/1_000_000.0,0,40);
-		g2d.drawString(cam.toString(), 0, 60);
+		g2d.drawImage(image, 0, 0, null);
+	
+		g2d.drawString(Math.random()+"", 0, 100);
+		g2d.drawString("Cam Pos:"+cam.translation.toString(), 0, 60);
+		g2d.drawString("Cam Rot:"+cam.rot.toString(), 0, 80);
+	}
+	public static BufferedImage render = null;
+	@Override
+	public void updateFrame(Graphics2D g2d){
+		
+		if (input.keys[0x11]) {
+			if (render != null) {
+				g2d.drawImage(render, 0, 0, null);
+				return;
+			}
+			long renderStart = System.nanoTime();
+			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			WritableRaster raster = image.getRaster();
+
+			clearZBuffer();
+		
+			env.points.clear();
+			List<Point> points = env.points;
+			final int incr = 4;
+			
+			points.add(new Point(cam.translation, .01, Color.white));
+
+			Vec3 origin = cam.translation;
+			for (int x = 0; x < width; x+=incr){
+				for (int y = 0; y < height; y+=incr){
+					double px = (double)(x-cx);
+					double py = (double)(cy-y);
+
+					Vec3 vector = cam.rot.transform(new Vec3(px, py, focalLength).normalize());
+
+					Point p = new Point(vector.add(origin),.01,
+						new Color((256*x)/width, (256*y)/height, 0)
+					);
+					points.add(p);
+					
+					int[] color = Ray.getColor(origin, vector, env, 3);
+					for (int dx = 0; dx < incr; dx++){
+						for (int dy = 0; dy < incr; dy++){
+							raster.setPixel(x+dx, y+dy, color);
+						}
+					}
+				}
+				System.out.println(x);
+			}
+
+			g2d.drawImage(image, 0, 0, null);
+			render = image;
+			long renderTime = System.nanoTime()-renderStart;
+			g2d.drawString("Render (ms):"+renderTime/1_000_000.0,0,20);
+			g2d.drawString("Logic  (ms):"+logicTime/1_000_000.0,0,40);
+			g2d.drawString(cam.toString(), 0, 60);
+			return;
+		}
+		renderRasterized(g2d);
 	}
 }

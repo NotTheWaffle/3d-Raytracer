@@ -51,4 +51,29 @@ public class Point {
 			}
 		}
 	}
+	public Vec3 getIntersection(Vec3 rayOrigin, Vec3 rayVector){
+		Vec3 l = rayOrigin.sub(point);
+		
+		double a = rayVector.dot(rayVector);
+		double b = 2 * rayVector.dot(l);
+		double c = l.dot(l) - radius*radius;
+
+
+		double discriminant = b*b - 4*a*c;
+
+		if (discriminant < 0) return null;
+		double sqrtD = Math.sqrt(discriminant);
+
+		double t0 = (-b - sqrtD) / (2 * a);
+		double t1 = (-b + sqrtD) / (2 * a);
+
+		double t = Double.POSITIVE_INFINITY;
+		
+		if (t0 > 0 && t0 < t) t = t0;
+		if (t1 > 0 && t1 < t) t = t1;
+
+		if (t == Double.POSITIVE_INFINITY) return null;
+
+		return rayOrigin.add(rayVector.mul(t));
+	}
 }

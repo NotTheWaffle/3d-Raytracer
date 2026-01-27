@@ -8,14 +8,22 @@ import java.util.List;
 public class Environment{
 	public final Mesh mesh;
 	public final List<Point> points;
+	public final List<Point> lights;
 	public Environment(String filename){
 		this.mesh = loadMesh("Models/"+filename+".obj").mesh;
 		
 		this.points = new ArrayList<>();
+		this.lights = new ArrayList<>();
+	}
+	public Environment(){
+		this.mesh = new Mesh(new Vec3[0], new Triangle[0]);
+		this.points = new ArrayList<>();
+		this.lights = new ArrayList<>();
 	}
 	public Environment(Mesh mesh){
 		this.mesh = mesh;
 		this.points = new ArrayList<>();
+		this.lights = new ArrayList<>();
 	}
 	public static Environment loadMesh(String filename){
 		System.out.println("Loading "+filename+"... ");

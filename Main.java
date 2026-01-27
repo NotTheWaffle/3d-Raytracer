@@ -4,9 +4,9 @@ import java.util.concurrent.locks.LockSupport;
 
 public class Main {
 	public static void main(String[] args){
-		Environment env = new Environment("teapot");
-		runGame(new RasterizedGame(512, 512, Math.PI/2, env), 30);
-		//runGame(new RaytracedGame(512, 512, Math.PI/2, env), 30);
+		Environment env = new Environment("cube");
+		env.lights.add(new Point(new Vec3(1, 0, 1), .5));
+		System.out.println(runGame(new RaytracedGame(512, 512, Math.PI/2, env), 30).isVirtual());
 	}
 	public static Thread runGame(final Game game, final double fps){
 		Thread t1 = new Thread(

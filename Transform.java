@@ -14,12 +14,11 @@ public class Transform {
 	public Vec3 getForwardVector(){
 		return new Vec3(rot.m[2], rot.m[5], rot.m[8]).normalize();
 	}
+
 	public Vec3 applyTo(Vec3 point){
 		return inv.transform(point.sub(translation));
 	}
-	public double distanceTo(Vec3 point){
-		return translation.dist(point);
-	}
+	
 	public void rotateX(double pitch){
 		rot = Mat3.multiply(rot, rotationX(-pitch));
 		inv = rot.transpose();
@@ -32,11 +31,12 @@ public class Transform {
 		rot = Mat3.multiply(rot, rotationZ(-roll));
 		inv = rot.transpose();
 	}
+	
 	public void translate(double x, double y, double z){
 		Vec3 fixed = rot.transform(new Vec3(x, y, z));
 		translation = translation.add(fixed);
 	}
-	public void translate(Vec3 vec){
+	public void translateAbsolute(Vec3 vec){
 		translation = translation.add(vec);
 	}
 	

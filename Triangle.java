@@ -21,11 +21,7 @@ public final class Triangle implements Serializable{
 	public Triangle(int i1, int i2, int i3, Vec3[] points){
 		this(points[i1], points[i2], points[i3]);
 	}
-	public double avgZ(Transform cam){
-		
-		double avg = (cam.distanceTo(p1) + cam.distanceTo(p2) + cam.distanceTo(p3))/3;
-		return avg;
-	}
+	
 	public void recolor(Vec3 light){
 		double coeff = -light.dot(normal);
 		if (coeff < 0) coeff = 0;
@@ -136,7 +132,7 @@ public final class Triangle implements Serializable{
 		}
 
 		double t = f * edge2.dot(q);
-		if (t < EPSILON) {
+		if (t > EPSILON) {
 			return rayVector.mul(t).add(rayOrigin);
 		} else {
 			return null;
