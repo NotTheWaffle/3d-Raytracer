@@ -1,4 +1,5 @@
 public enum Material {
 	SOLID,
-	LIGHT;
+	LIGHT,
+	MIRROR;
 }

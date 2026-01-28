@@ -12,7 +12,7 @@ public abstract class PhysicalObject {
 		switch (material){
 			case SOLID -> {
 				luminosity = 0;
-				specularity = 0;
+				specularity = 0.1;
 				this.emittedColor = Color.black;
 				this.color = color;
 			}
@@ -22,10 +22,36 @@ public abstract class PhysicalObject {
 				this.emittedColor = color;
 				this.color = Color.black;
 			}
+			case MIRROR -> {
+				luminosity = 0;
+				specularity = .9;
+				this.emittedColor = Color.BLACK;
+				this.color = color;
+			}
 			case null -> {
 
 			}
 		}
+	}
+	public static PhysicalObject rectangle(double x, double y, double z, double width, Color color, Material material){
+		double radius = width/2;
+		return new Mesh(
+			new Point[0],
+			new Triangle[] {
+				new Triangle(
+					new Point(new Vec3(x+radius, y, z-radius), 0),
+					new Point(new Vec3(x-radius, y, z-radius), 0),
+					new Point(new Vec3(x-radius, y, z+radius), 0),
+					material, color
+				),
+				new Triangle(
+					new Point(new Vec3(x-radius, y, z+radius), 0),
+					new Point(new Vec3(x+radius, y, z+radius), 0),
+					new Point(new Vec3(x+radius, y, z-radius), 0),
+					material, color
+				)
+			}
+		);
 	}
 	public abstract Intersection getIntersection(Vec3 origin, Vec3 direction);
 	public abstract void render(WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam);

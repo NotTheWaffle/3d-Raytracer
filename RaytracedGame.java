@@ -6,8 +6,11 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import javax.imageio.ImageIO;
 
 public class RaytracedGame extends Game{
@@ -147,49 +150,104 @@ public class RaytracedGame extends Game{
 			WritableRaster raster = image.getRaster();
 
 			clearZBuffer();
-		
-			
-			Random random = new Random();
-			Vec3 origin = cam.translation;
-			for (int x = 0; x < width; x+=pixelSize){
-				for (int y = 0; y < height; y+=pixelSize){
-					double px = (double)(x-cx);
-					double py = (double)(cy-y);
-
-					Vec3 vector = cam.rot.transform(new Vec3(px, py, focalLength).normalize());
-					
-					
-					double[] color = new double[3];
-					int resolution = 1;
-					for (int i = 0; i < resolution; i++){
-						double[] col = Ray.getColor(origin, vector, env, 4, random);
-						color[0] += col[0];
-						color[1] += col[1];
-						color[2] += col[2];
-					}
-					color[0] /= resolution;
-					color[1] /= resolution;
-					color[2] /= resolution;
-					pixelBuffer[y/pixelSize][x/pixelSize].addSample(color, 1);
-					color = pixelBuffer[y/pixelSize][x/pixelSize].color;
-
-					int[] colori = {(int)(color[0]*255), (int)(color[1]*255), (int)(color[2]*255), 255};
-					for (int dx = 0; dx < pixelSize; dx++){
-						for (int dy = 0; dy < pixelSize; dy++){
-							raster.setPixel(x+dx, y+dy, colori);
-						}
+			boolean type = true;
+			if (type){
+				int ts = 4;
+				List<Thread> threads = new ArrayList<>();
+				for (int x = 0; x < ts; x++){
+					for (int y = 0; y < ts; y++){
+						final int x_f = x;
+						final int y_f = y;
+						Thread t = new Thread(() -> {
+							raytraceRange(width*x_f/ts, height*y_f/ts, width*(x_f+1)/ts, height*(y_f+1)/ts, raster);
+						});
+						t.start();
+						threads.add(t);
 					}
 				}
+				try {
+					for (Thread t : threads){
+						t.join();
+					}
+				} catch (Exception e) {
+				}
+			} else {
+				raytraceRange(0, 0, width, height, raster);
 			}
+			
+			//Vec3 origin = cam.translation;
+			//for (int x = 0; x < width; x+=pixelSize){
+			//	for (int y = 0; y < height; y+=pixelSize){
+			//		double px = (double)(x-cx);
+			//		double py = (double)(cy-y);
+//
+			//		Vec3 vector = cam.rot.transform(new Vec3(px, py, focalLength).normalize());
+			//		
+			//		
+			//		double[] color = new double[3];
+			//		int resolution = 1;
+			//		for (int i = 0; i < resolution; i++){
+			//			double[] col = Ray.getColor(origin, vector, env, 10, random);
+			//			color[0] += col[0];
+			//			color[1] += col[1];
+			//			color[2] += col[2];
+			//		}
+			//		color[0] /= resolution;
+			//		color[1] /= resolution;
+			//		color[2] /= resolution;
+			//		pixelBuffer[y/pixelSize][x/pixelSize].addSample(color, 1);
+			//		color = pixelBuffer[y/pixelSize][x/pixelSize].color;
+//
+			//		int[] colori = {(int)(color[0]*255), (int)(color[1]*255), (int)(color[2]*255), 255};
+			//		for (int dx = 0; dx < pixelSize; dx++){
+			//			for (int dy = 0; dy < pixelSize; dy++){
+			//				raster.setPixel(x+dx, y+dy, colori);
+			//			}
+			//		}
+			//	}
+			//}
 
 			g2d.drawImage(image, 0, 0, null);
 			render = image;
 			long renderTime = System.nanoTime()-renderStart;
 			g2d.drawString("Render (ms):"+renderTime/1_000_000.0,0,20);
 			g2d.drawString("Logic  (ms):"+logicTime/1_000_000.0,0,40);
-			g2d.drawString(cam.toString(), 0, 60);
 			return;
 		}
 		renderRasterized(g2d);
+	}
+	private void raytraceRange(int x1, int y1, int x2, int y2, WritableRaster raster){
+		Random random = ThreadLocalRandom.current();
+		Vec3 origin = cam.translation;
+		for (int x = x1; x < x2; x+=pixelSize){
+			for (int y = y1; y < y2; y+=pixelSize){
+				double px = (double)(x-cx);
+				double py = (double)(cy-y);
+
+				Vec3 vector = cam.rot.transform(new Vec3(px, py, focalLength).normalize());
+				
+				
+				double[] color = new double[3];
+				int resolution = 4;
+				for (int i = 0; i < resolution; i++){
+					double[] col = Ray.getColor(origin, vector, env, 10, random);
+					color[0] += col[0];
+					color[1] += col[1];
+					color[2] += col[2];
+				}
+				color[0] /= resolution;
+				color[1] /= resolution;
+				color[2] /= resolution;
+				pixelBuffer[y/pixelSize][x/pixelSize].addSample(color, 1);
+				color = pixelBuffer[y/pixelSize][x/pixelSize].color;
+
+				int[] colori = {(int)(color[0]*255), (int)(color[1]*255), (int)(color[2]*255), 255};
+				for (int dx = 0; dx < pixelSize; dx++){
+					for (int dy = 0; dy < pixelSize; dy++){
+						raster.setPixel(x+dx, y+dy, colori);
+					}
+				}
+			}
+		}
 	}
 }
