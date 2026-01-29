@@ -6,27 +6,38 @@ import java.awt.image.WritableRaster;
 public abstract class PhysicalObject {
 	public Color color;
 	public Color emittedColor;
-	public double specularity;
 	public double luminosity;
+	public double specularity;
+	public double transparency;
 	public PhysicalObject(Material material, Color color){
 		switch (material){
 			case SOLID -> {
-				luminosity = 0;
-				specularity = 0.1;
+				this.luminosity = 0;
 				this.emittedColor = Color.black;
 				this.color = color;
+				this.specularity = 0;
+				this.transparency = 0;
 			}
 			case LIGHT -> {
-				luminosity = 1;
-				specularity = 0;
+				this.luminosity = 1;
 				this.emittedColor = color;
 				this.color = Color.black;
+				this.specularity = 0;
+				this.transparency = 0;
 			}
 			case MIRROR -> {
-				luminosity = 0;
-				specularity = .9;
+				this.luminosity = 0;
 				this.emittedColor = Color.BLACK;
 				this.color = color;
+				this.specularity = .99;
+				this.transparency = 0;
+			}
+			case GLASS -> {
+				this.luminosity = 0;
+				this.emittedColor = Color.BLACK;
+				this.color = color;
+				this.specularity = 0;
+				this.transparency = 1;
 			}
 			case null -> {
 
@@ -36,7 +47,6 @@ public abstract class PhysicalObject {
 	public static PhysicalObject rectangle(double x, double y, double z, double width, Color color, Material material){
 		double radius = width/2;
 		return new Mesh(
-			new Point[0],
 			new Triangle[] {
 				new Triangle(
 					new Point(new Vec3(x+radius, y, z-radius), 0),

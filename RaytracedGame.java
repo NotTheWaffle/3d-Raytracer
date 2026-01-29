@@ -1,6 +1,7 @@
 import Game.Game;
 import Game.Input;
 import Math.*;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -49,10 +50,14 @@ public class RaytracedGame extends Game{
 		this.focalLength = (double) height / (2 * Math.tan(fov/2));
 		zBuffer = new double[width][height];
 		pixelBuffer = new Pixel[screenWidth][screenHeight];
+		for (Pixel[] row : pixelBuffer) {
+			for (int x = 0; x < row.length; x++) {
+				row[x] = new Pixel();
+			}
+		}
 		raytrace = true;
 		resetPixelBuffer();
 		raytrace = false;
-		System.out.println(pixelBuffer[0][0]);
 	}
 
 	@Override
@@ -61,7 +66,9 @@ public class RaytracedGame extends Game{
 	}
 	
 	@Override
-	public void tick(){
+	public void tick(double dt){
+		double speed = this.speed * dt/16.0;
+		double rotSpeed = this.rotSpeed * dt/16.0;
 		long start = System.nanoTime();
 
 		if (input.keys['W']) 				{resetPixelBuffer(); cam.translate(0, 0, speed);}
@@ -100,8 +107,8 @@ public class RaytracedGame extends Game{
 	private void resetPixelBuffer(){
 		if (!raytrace) return;
 		for (Pixel[] row : pixelBuffer) {
-			for (int x = 0; x < row.length; x++) {
-				row[x] = new Pixel();
+			for (Pixel element : row) {
+				element.clear();
 			}
 		}
 	}
@@ -127,110 +134,73 @@ public class RaytracedGame extends Game{
 			point.render(raster, focalLength, cx, cy, zBuffer, cam);
 		}
 		g2d.drawImage(image, 0, 0, null);
-	
-		g2d.drawString(Math.random()+"", 0, 20);
-		g2d.drawString(cam.translation.toString(), 0, 40);
 	}
 	public static BufferedImage render = null;
 	public static boolean raytrace = false;
 	public static Pixel[][] pixelBuffer;
 	@Override
 	public void updateFrame(Graphics2D g2d){
+		long renderStart = System.nanoTime();
 		if (input.keys['K'] && render != null){
 			try {
 				File outputfile = new File("saved.png");
 				ImageIO.write(render, "png", outputfile);
-			} catch (IOException e) {
-			}
+			} catch (IOException e) {}
 		}
 		if (raytrace || input.keys['G']){
-			
-			long renderStart = System.nanoTime();
 			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 			WritableRaster raster = image.getRaster();
 
 			clearZBuffer();
-			boolean type = true;
-			if (type){
-				int ts = 4;
-				List<Thread> threads = new ArrayList<>();
-				for (int x = 0; x < ts; x++){
-					for (int y = 0; y < ts; y++){
-						final int x_f = x;
-						final int y_f = y;
-						Thread t = new Thread(() -> {
-							raytraceRange(width*x_f/ts, height*y_f/ts, width*(x_f+1)/ts, height*(y_f+1)/ts, raster);
-						});
-						t.start();
-						threads.add(t);
-					}
+			int ts = 5;
+			List<Thread> threads = new ArrayList<>();
+			for (int x = 0; x < ts; x++){
+				for (int y = 0; y < ts; y++){
+					final int x_f = x;
+					final int y_f = y;
+					Thread t = new Thread(() -> {
+						raytraceRange(width*x_f/ts, height*y_f/ts, width*(x_f+1)/ts, height*(y_f+1)/ts, raster);
+					});
+					t.start();
+					threads.add(t);
 				}
-				try {
-					for (Thread t : threads){
-						t.join();
-					}
-				} catch (Exception e) {
-				}
-			} else {
-				raytraceRange(0, 0, width, height, raster);
 			}
-			
-			//Vec3 origin = cam.translation;
-			//for (int x = 0; x < width; x+=pixelSize){
-			//	for (int y = 0; y < height; y+=pixelSize){
-			//		double px = (double)(x-cx);
-			//		double py = (double)(cy-y);
-//
-			//		Vec3 vector = cam.rot.transform(new Vec3(px, py, focalLength).normalize());
-			//		
-			//		
-			//		double[] color = new double[3];
-			//		int resolution = 1;
-			//		for (int i = 0; i < resolution; i++){
-			//			double[] col = Ray.getColor(origin, vector, env, 10, random);
-			//			color[0] += col[0];
-			//			color[1] += col[1];
-			//			color[2] += col[2];
-			//		}
-			//		color[0] /= resolution;
-			//		color[1] /= resolution;
-			//		color[2] /= resolution;
-			//		pixelBuffer[y/pixelSize][x/pixelSize].addSample(color, 1);
-			//		color = pixelBuffer[y/pixelSize][x/pixelSize].color;
-//
-			//		int[] colori = {(int)(color[0]*255), (int)(color[1]*255), (int)(color[2]*255), 255};
-			//		for (int dx = 0; dx < pixelSize; dx++){
-			//			for (int dy = 0; dy < pixelSize; dy++){
-			//				raster.setPixel(x+dx, y+dy, colori);
-			//			}
-			//		}
-			//	}
-			//}
+			try {
+				for (Thread t : threads){
+					t.join();
+				}
+			} catch (InterruptedException e) {
+			}
 
 			g2d.drawImage(image, 0, 0, null);
 			render = image;
-			long renderTime = System.nanoTime()-renderStart;
-			g2d.drawString("Render (ms):"+renderTime/1_000_000.0,0,20);
-			g2d.drawString("Logic  (ms):"+logicTime/1_000_000.0,0,40);
-			return;
+		} else {
+			renderRasterized(g2d);
 		}
-		renderRasterized(g2d);
+		long renderTime = System.nanoTime()-renderStart;
+		g2d.fillRect(0, 0, 120, 85);
+		g2d.setColor(Color.WHITE);
+		g2d.drawString("Render (ms):"+renderTime/1_000_000.0,0,20);
+		g2d.drawString("Logic  (ms):"+logicTime/1_000_000.0,0,40);
+		
+		g2d.drawString(String.format("%2.2f",Math.random()), 0, 60);
+		g2d.drawString(cam.translation.toString(), 0, 80);
 	}
 	private void raytraceRange(int x1, int y1, int x2, int y2, WritableRaster raster){
 		Random random = ThreadLocalRandom.current();
 		Vec3 origin = cam.translation;
-		for (int x = x1; x < x2; x+=pixelSize){
-			for (int y = y1; y < y2; y+=pixelSize){
+		for (int x = x1; x < x2; x += pixelSize){
+			for (int y = y1; y < y2; y += pixelSize){
 				double px = (double)(x-cx);
 				double py = (double)(cy-y);
 
 				Vec3 vector = cam.rot.transform(new Vec3(px, py, focalLength).normalize());
 				
-				
+				Pixel pixel = pixelBuffer[y/pixelSize][x/pixelSize];
 				double[] color = new double[3];
 				int resolution = 4;
 				for (int i = 0; i < resolution; i++){
-					double[] col = Ray.getColor(origin, vector, env, 10, random);
+					double[] col = Ray.trace(origin, vector, env, 10, random);
 					color[0] += col[0];
 					color[1] += col[1];
 					color[2] += col[2];
@@ -238,9 +208,8 @@ public class RaytracedGame extends Game{
 				color[0] /= resolution;
 				color[1] /= resolution;
 				color[2] /= resolution;
-				pixelBuffer[y/pixelSize][x/pixelSize].addSample(color, 1);
-				color = pixelBuffer[y/pixelSize][x/pixelSize].color;
-
+				pixel.addSample(color, resolution);
+				color = pixel.runningColor;
 				int[] colori = {(int)(color[0]*255), (int)(color[1]*255), (int)(color[2]*255), 255};
 				for (int dx = 0; dx < pixelSize; dx++){
 					for (int dy = 0; dy < pixelSize; dy++){

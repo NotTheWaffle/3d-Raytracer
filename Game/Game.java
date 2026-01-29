@@ -16,7 +16,7 @@ public class Game {
 	public String name(){
 		return "Default";
 	}
-	public void tick(){
+	public void tick(double dt){
 		
 	}
 	public void updateFrame(Graphics2D g2d){

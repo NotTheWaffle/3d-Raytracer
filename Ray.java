@@ -6,11 +6,11 @@ import java.util.Random;
 
 public final class Ray {
 	private Ray(){}
-	public static double[] getColor(Vec3 origin, Vec3 direction, Environment env, int depth, Random random){
+	public static double[] trace(Vec3 origin, Vec3 direction, Environment env, int maxDepth, Random random){
 		double[] rayColor = {1.0, 1.0, 1.0};
 		double[] incomingLight = {0.0, 0.0, 0.0};
 
-		for (int i = 0; i < depth; i++){
+		for (int i = 0; i < maxDepth; i++){
 			// find intersection
 			Intersection intersection = null;
 			for (PhysicalObject p : env.physicalObjects){
@@ -29,11 +29,17 @@ public final class Ray {
 			
 			//find next ray
 			Vec3 nextDirection;
-			if (random.nextDouble() < collisionObject.specularity) {
-				nextDirection = direction.sub(intersection.normal.mul(2 * direction.dot(intersection.normal))).normalize();
+			if (collisionObject.transparency > 0){
+				nextDirection = direction;
 			} else {
-				nextDirection = new Vec3(1-2*random.nextDouble(), 1-2*random.nextDouble(), 1-2*random.nextDouble());
-				if (nextDirection.dot(intersection.normal) < 0) nextDirection = nextDirection.mul(-1);
+				nextDirection = direction.sub(intersection.normal.mul(2 * direction.dot(intersection.normal))).normalize();
+				double iv = collisionObject.specularity;
+				double variance = 1-iv;
+				nextDirection = new Vec3(
+					nextDirection.x*iv+(random.nextDouble()-.5)*variance,
+					nextDirection.y*iv+(random.nextDouble()-.5)*variance,
+					nextDirection.z*iv+(random.nextDouble()-.5)*variance
+				).normalize();
 			}
 			origin = intersection.pos;
 			direction = nextDirection;
