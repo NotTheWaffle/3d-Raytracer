@@ -9,20 +9,20 @@ import java.util.concurrent.locks.LockSupport;
 public class Main {
 	public static void main(String[] args){
 		String model = "cube";
-		int fps = 0;
+		double fps = 0;
 		int size = 512;
 		if (args.length > 0){
 			model = args[0];
 			size = Integer.parseInt(args[1]);
 		}
 		Environment env = new Environment();
-		env.physicalObjects.add(Mesh.loadObj(model, true, Color.GREEN, Material.MIRROR));
+		env.physicalObjects.add(Mesh.loadObj(model, true, Color.WHITE, Material.MIRROR));
 		// model
 		env.physicalObjects.add(PhysicalObject.rectangle(0, -1, 0, 20, Color.WHITE, Material.SOLID));
 		// sun
 		env.physicalObjects.add(new Sphere(new Vec3(0, 4, 7), 5, Color.WHITE, Material.LIGHT));
 		// model
-		env.physicalObjects.add(new Sphere(new Vec3( -2, 1, 0), 1, Color.WHITE, Material.MIRROR));
+		env.physicalObjects.add(new Sphere(new Vec3(-2, 1, 0), 1, Color.WHITE, Material.MIRROR));
 		// model
 		env.physicalObjects.add(new Sphere(new Vec3(2, 0, 0), 1, Color.WHITE, Material.GLASS));
 		// model

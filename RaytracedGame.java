@@ -189,15 +189,15 @@ public class RaytracedGame extends Game{
 				
 				Pixel pixel = pixelBuffer[y][x];
 				int[] color = new int[3];
-				int resolution = 4;
-				for (int i = 0; i < resolution; i++){
+				int samples = 4;
+				for (int i = 0; i < samples; i++){
 					double[] col = Ray.trace(origin, vector, env, 10, random);
 					color[0] += (int) (255 * col[0]);
 					color[1] += (int) (255 * col[1]);
 					color[2] += (int) (255 * col[2]);
 				}
-				pixel.addSample(color);
-				color = pixel.runningColor;
+				pixel.addSample(color, samples);
+				color = pixel.getColor();
 				int[] colori = {(int)(color[0]), (int)(color[1]), (int)(color[2]), 255};
 				raster.setPixel(x, y, colori);
 			}
