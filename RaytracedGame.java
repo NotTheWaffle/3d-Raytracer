@@ -198,9 +198,9 @@ public class RaytracedGame extends Game{
 				
 				Pixel pixel = pixelBuffer[y/pixelSize][x/pixelSize];
 				double[] color = new double[3];
-				int resolution = 4;
+				int resolution = 1;
 				for (int i = 0; i < resolution; i++){
-					double[] col = Ray.trace(origin, vector, env, 10, random);
+					double[] col = Ray.trace(origin, vector, env, 50, random);
 					color[0] += col[0];
 					color[1] += col[1];
 					color[2] += col[2];

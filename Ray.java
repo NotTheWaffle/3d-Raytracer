@@ -7,6 +7,7 @@ import java.util.Random;
 public final class Ray {
 	private Ray(){}
 	public static double[] trace(Vec3 origin, Vec3 direction, Environment env, int maxDepth, Random random){
+		final double EPSILON = 1e-8;
 		double[] rayColor = {1.0, 1.0, 1.0};
 		double[] incomingLight = {0.0, 0.0, 0.0};
 
@@ -30,7 +31,26 @@ public final class Ray {
 			//find next ray
 			Vec3 nextDirection;
 			if (collisionObject.transparency > 0){
-				nextDirection = direction;
+				//System.out.println("suck me");
+				double ior = 1;
+				double ior2 = 1.5;
+				double eta = ior/ior2;
+				double cosAngleIn = -direction.dot(intersection.normal);
+				Vec3 n = intersection.normal;
+				if (cosAngleIn < 0) {
+					// ray is inside the material
+					n = n.mul(-1);
+					cosAngleIn = -direction.dot(n);
+					eta = ior2 / ior;
+				}
+				double sinSqrAngleOfRefraction = eta * eta * (1 - cosAngleIn * cosAngleIn);
+				if (sinSqrAngleOfRefraction > 1){
+					break;
+				}
+				nextDirection = direction.mul(eta).add(intersection.normal.mul(eta * cosAngleIn - Math.sqrt(1 - sinSqrAngleOfRefraction)));
+				origin = intersection.pos.add(direction.mul(EPSILON));
+				
+				direction = nextDirection;
 			} else {
 				nextDirection = direction.sub(intersection.normal.mul(2 * direction.dot(intersection.normal))).normalize();
 				double iv = collisionObject.specularity;
@@ -40,9 +60,9 @@ public final class Ray {
 					nextDirection.y*iv+(random.nextDouble()-.5)*variance,
 					nextDirection.z*iv+(random.nextDouble()-.5)*variance
 				).normalize();
+				origin = intersection.pos;
+				direction = nextDirection;
 			}
-			origin = intersection.pos;
-			direction = nextDirection;
 			
 			//calculate colors
 			Color emittedColor = collisionObject.emittedColor;

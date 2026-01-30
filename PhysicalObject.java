@@ -29,7 +29,7 @@ public abstract class PhysicalObject {
 				this.luminosity = 0;
 				this.emittedColor = Color.BLACK;
 				this.color = color;
-				this.specularity = .99;
+				this.specularity = 1;
 				this.transparency = 0;
 			}
 			case GLASS -> {
@@ -55,9 +55,9 @@ public abstract class PhysicalObject {
 					material, color
 				),
 				new Triangle(
-					new Point(new Vec3(x-radius, y, z+radius), 0),
-					new Point(new Vec3(x+radius, y, z+radius), 0),
 					new Point(new Vec3(x+radius, y, z-radius), 0),
+					new Point(new Vec3(x+radius, y, z+radius), 0),
+					new Point(new Vec3(x-radius, y, z+radius), 0),
 					material, color
 				)
 			}

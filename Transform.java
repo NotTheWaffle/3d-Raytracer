@@ -6,9 +6,13 @@ public class Transform {
 	public Mat3 rot;
 	public Mat3 inv;
 	public Transform(){
-		this.translation = new Vec3(0, 0, 0);
+		final double EPSILON = 1e-8;
+		this.translation = new Vec3(EPSILON, EPSILON, EPSILON);
 		this.rot = Mat3.identity();
 		this.inv = rot.transpose();
+		rotateX(EPSILON);
+		rotateY(EPSILON);
+		rotateZ(EPSILON);
 	}
 	public Vec3 getForwardVector(){
 		return new Vec3(rot.m02, rot.m12, rot.m22).normalize();

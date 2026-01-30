@@ -107,7 +107,7 @@ public final class Triangle extends PhysicalObject{
 	@Override
 	public Intersection getIntersection(Vec3 rayOrigin, Vec3 rayVector){
 
-		final double EPSILON = 1e-4;
+		final double EPSILON = 1e-8;
 
 		Vec3 edge1 = p2.pos.sub(p1.pos);
 		Vec3 edge2 = p3.pos.sub(p1.pos);

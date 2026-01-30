@@ -58,6 +58,7 @@ public class Sphere extends PhysicalObject{
 	}
 	@Override
 	public Intersection getIntersection(Vec3 rayOrigin, Vec3 rayVector){
+		final double EPSILON = 1e-8;
 		Vec3 l = rayOrigin.sub(point);
 		
 		double a = 1;
@@ -75,8 +76,8 @@ public class Sphere extends PhysicalObject{
 
 		double t = Double.POSITIVE_INFINITY;
 		
-		if (t0 > 0 && t0 < t) t = t0;
-		if (t1 > 0 && t1 < t) t = t1;
+		if (t0 > EPSILON && t0 < t) t = t0;
+		if (t1 > EPSILON && t1 < t) t = t1;
 
 		if (t == Double.POSITIVE_INFINITY) return null;
 		Vec3 intersectionPoint = rayOrigin.add(rayVector.mul(t));
