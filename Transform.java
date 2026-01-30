@@ -1,7 +1,7 @@
 import Math.Mat3;
 import Math.Vec3;
 
-public class Transform {
+public final class Transform {
 	public Vec3 translation;
 	public Mat3 rot;
 	public Mat3 inv;

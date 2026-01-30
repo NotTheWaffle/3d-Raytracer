@@ -10,7 +10,7 @@ public final class Ray {
 		final double EPSILON = 1e-8;
 		double[] rayColor = {1.0, 1.0, 1.0};
 		double[] incomingLight = {0.0, 0.0, 0.0};
-
+		
 		for (int i = 0; i < maxDepth; i++){
 			// find intersection
 			Intersection intersection = null;
@@ -31,7 +31,7 @@ public final class Ray {
 			//find next ray
 			Vec3 nextDirection;
 			if (collisionObject.transparency > 0){
-				//System.out.println("suck me");
+				
 				double ior = 1;
 				double ior2 = 1.5;
 				double eta = ior/ior2;

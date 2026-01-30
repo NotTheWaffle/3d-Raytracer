@@ -1,6 +1,7 @@
 
 import Math.Vec3;
 import java.awt.Color;
+import java.awt.image.WritableRaster;
 
 public final class Triangle extends PhysicalObject{
 	public final Point p1;
@@ -39,7 +40,7 @@ public final class Triangle extends PhysicalObject{
 		return edge1.cross(edge2).normalize();
 	}
 	@Override
-	public void render(java.awt.image.WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam) {
+	public void render(WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam) {
 		Vec3 p1 = cam.applyTo(this.p1.pos);
 		Vec3 p2 = cam.applyTo(this.p2.pos);
 		Vec3 p3 = cam.applyTo(this.p3.pos);
@@ -69,9 +70,9 @@ public final class Triangle extends PhysicalObject{
 		if (area == 0) return;
 
 		int[] rgb = {
-			color.getRed(),
-			color.getGreen(),
-			color.getBlue(),
+			raytracedColor.getRed(),
+			raytracedColor.getGreen(),
+			raytracedColor.getBlue(),
 			255
 		};
 		double ia = 1/area;

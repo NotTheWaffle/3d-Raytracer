@@ -41,7 +41,7 @@ public class RasterizedGame extends Game{
 	}
 	public static long logicTime;
 	@Override
-	public void tick(long dt){
+	public void tick(double dt){
 		long start = System.nanoTime();
 
 		if (input.keys['W']) 				cam.translate(0, 0, speed);

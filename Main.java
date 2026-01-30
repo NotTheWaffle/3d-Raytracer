@@ -8,7 +8,7 @@ import java.util.concurrent.locks.LockSupport;
 
 public class Main {
 	public static void main(String[] args){
-		String model = "octahedron";
+		String model = "cube";
 		int fps = 0;
 		int size = 512;
 		if (args.length > 0){
@@ -16,19 +16,19 @@ public class Main {
 			size = Integer.parseInt(args[1]);
 		}
 		Environment env = new Environment();
-		env.physicalObjects.add(Mesh.loadObj(model, true, Color.WHITE, Material.MIRROR));
-		
+		env.physicalObjects.add(Mesh.loadObj(model, true, Color.GREEN, Material.MIRROR));
+		// model
 		env.physicalObjects.add(PhysicalObject.rectangle(0, -1, 0, 20, Color.WHITE, Material.SOLID));
-		
+		// sun
 		env.physicalObjects.add(new Sphere(new Vec3(0, 4, 7), 5, Color.WHITE, Material.LIGHT));
-
-		//env.physicalObjects.add(new Sphere(new Vec3( -2, 1, 0), 1, Color.WHITE, Material.MIRROR));
-
-		//env.physicalObjects.add(new Sphere(new Vec3(2, 0, 0), 1, Color.WHITE, Material.SOLID));
-
-		//env.physicalObjects.add(new Sphere(new Vec3(2, 0, 2), 1, Color.GREEN, Material.SOLID));
+		// model
+		env.physicalObjects.add(new Sphere(new Vec3( -2, 1, 0), 1, Color.WHITE, Material.MIRROR));
+		// model
+		env.physicalObjects.add(new Sphere(new Vec3(2, 0, 0), 1, Color.WHITE, Material.GLASS));
+		// model
+		env.physicalObjects.add(new Sphere(new Vec3(2, 0, 2), 1, Color.WHITE, Material.SOLID));
 		
-		runGame(new RaytracedGame(size, size , 1, Math.PI/2, env), fps);
+		runGame(new RaytracedGame(size, size, Math.PI/2, 1, env), fps);
 	}
 	public static Thread runGame(final Game game, final double fps){
 		Thread t1;
