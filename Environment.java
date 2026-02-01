@@ -19,4 +19,7 @@ public class Environment{
 		physicalObjects.addAll(Arrays.asList(mesh));
 		this.points = new ArrayList<>();
 	}
+	public void add(PhysicalObject object){
+		physicalObjects.add(object);
+	}
 }

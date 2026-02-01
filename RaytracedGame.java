@@ -104,7 +104,7 @@ public class RaytracedGame extends Game{
 		}
 	}
 
-	private void renderRasterized(Graphics2D g2d){
+	private BufferedImage renderRasterized(){
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		WritableRaster raster = image.getRaster();
 		Vec3 light = cam.getForwardVector();
@@ -124,11 +124,10 @@ public class RaytracedGame extends Game{
 		for (Point point : env.points){
 			point.render(raster, focalLength, cx, cy, zBuffer, cam);
 		}
-		g2d.drawImage(image, 0, 0, null);
+		return image;
 	}
-	
 	@Override
-	public void updateFrame(Graphics2D g2d){
+	public void generateFrame(){
 		long renderStart = System.nanoTime();
 		if (input.keys['K'] && render != null){
 			try {
@@ -158,15 +157,16 @@ public class RaytracedGame extends Game{
 				for (Thread t : threads){
 					t.join();
 				}
-			} catch (InterruptedException e) {
-			}
-
-			g2d.drawImage(image, 0, 0, null);
-			render = image;
+			} catch (InterruptedException e){}
+			
+			nextFrame = image;
 		} else {
-			renderRasterized(g2d);
+			nextFrame = renderRasterized();
 		}
+		
+		Graphics2D g2d = nextFrame.createGraphics();
 		long renderTime = System.nanoTime()-renderStart;
+		g2d.setColor(Color.gray);
 		g2d.fillRect(0, 0, 120, 85);
 		g2d.setColor(Color.WHITE);
 		g2d.drawString("Render (ms):"+renderTime/1_000_000.0,0,20);
@@ -175,6 +175,7 @@ public class RaytracedGame extends Game{
 		g2d.drawString(String.format("%2.2f",Math.random()), 0, 60);
 		g2d.drawString(cam.translation.toString(), 0, 80);
 	}
+	
 	private void raytraceRange(int x1, int y1, int x2, int y2, WritableRaster raster){
 		Random random = ThreadLocalRandom.current();
 		Vec3 origin = cam.translation;

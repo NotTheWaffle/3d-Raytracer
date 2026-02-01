@@ -8,27 +8,33 @@ import java.util.concurrent.locks.LockSupport;
 
 public class Main {
 	public static void main(String[] args){
-		String model = "tetrahedron";
+		String model = "chain";
 		double fps = 0;
 		int size = 512;
 		if (args.length > 0){
 			model = args[0];
 			size = Integer.parseInt(args[1]);
 		}
+
+
 		Environment env = new Environment();
-		// model
-		env.physicalObjects.add(Mesh.loadObj(model, true, Color.WHITE, Material.MIRROR));
+
+		env.add(Mesh.loadObj(model, 1, Color.yellow, Material.SOLID));
+		
+		// sun
+		env.add(new Sphere(new Vec3(0, 20, 15), 20, Color.WHITE, Material.LIGHT));
+		
+		env.add(new Sphere(new Vec3(0, .25, 2), 1, Color.WHITE, Material.MIRROR));
+		
+		env.add(new Sphere(new Vec3(2.5, .25, 0), 1, Color.GREEN, Material.SOLID));
+
+		env.add(new Sphere(new Vec3(-2.5, .25, 0), 1, Color.RED, Material.SOLID));
 
 		// floor
-		env.physicalObjects.add(PhysicalObject.rectangle(0, -.5, 0, 20, Color.WHITE, Material.SOLID));
-
-		// sun
-		env.physicalObjects.add(new Sphere(new Vec3(0, 4, 7), 5, Color.WHITE, Material.LIGHT));
-
-		// refraction test
-		env.physicalObjects.add(new Sphere(new Vec3(2, 0, 0), 1, Color.WHITE, Material.MIRROR));
+		env.add(Mesh.rectangle(0, -1, 0, 20, Color.WHITE, Material.SOLID));
 		
-		runGame(new RaytracedGame(size, size, Math.PI/2, 1, env), fps);
+		
+		runGame(new RaytracedGame(size, size, Math.PI*.5, 1, env), fps);
 	}
 	public static Thread runGame(final Game game, final double fps){
 		Thread t1;
@@ -43,6 +49,7 @@ public class Main {
 						double deltaTime = (now - lastTime) / 1_000_000.0;
 						lastTime = now;
 						game.tick(deltaTime);
+						game.generateFrame();
 						window.render();
 					}
 				}
@@ -57,6 +64,7 @@ public class Main {
 						long targetTime = System.nanoTime() + frameLength;
 
 						game.tick(frameLength/1_000_000.0);
+						game.generateFrame();
 						window.render();
 						long remaining = targetTime - System.nanoTime();
 						if (remaining > 100_000) {

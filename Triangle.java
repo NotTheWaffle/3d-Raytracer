@@ -29,10 +29,13 @@ public final class Triangle extends PhysicalObject{
 		double coeff = -light.dot(normal);
 		if (coeff < 0) coeff = 0;
 		this.raytracedColor = new Color(
-			(int) (color.getRed() * coeff),
-			(int) (color.getGreen() * coeff),
-			(int) (color.getBlue() * coeff)
+			(int) (reflectionColor.getRed() * coeff),
+			(int) (reflectionColor.getGreen() * coeff),
+			(int) (reflectionColor.getBlue() * coeff)
 		);
+	}
+	public Vec3 center(){
+		return (p1.pos.add(p2.pos).add(p3.pos)).mul(1.0/3);
 	}
 	public Vec3 normal() {
 		Vec3 edge1 = p2.pos.sub(p1.pos);

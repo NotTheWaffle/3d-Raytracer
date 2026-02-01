@@ -42,7 +42,7 @@ public class Point {
 				int dy = y-screenY;
 				if (dx * dx + dy * dy < radius * radius) {
 
-					if (p.z < zBuffer[x][y]) {
+					if (true || p.z < zBuffer[x][y]) {
 						zBuffer[x][y] = p.z;
 						raster.setPixel(x, y, rgb);
 					}
@@ -50,29 +50,12 @@ public class Point {
 			}
 		}
 	}
-	public Vec3 getIntersection(Vec3 rayOrigin, Vec3 rayVector){
-		Vec3 l = rayOrigin.sub(pos);
-		
-		double a = rayVector.dot(rayVector);
-		double b = 2 * rayVector.dot(l);
-		double c = l.dot(l) - radius*radius;
-
-
-		double discriminant = b*b - 4*a*c;
-
-		if (discriminant < 0) return null;
-		double sqrtD = Math.sqrt(discriminant);
-
-		double t0 = (-b - sqrtD) / (2 * a);
-		double t1 = (-b + sqrtD) / (2 * a);
-
-		double t = Double.POSITIVE_INFINITY;
-		
-		if (t0 > 0 && t0 < t) t = t0;
-		if (t1 > 0 && t1 < t) t = t1;
-
-		if (t == Double.POSITIVE_INFINITY) return null;
-
-		return rayOrigin.add(rayVector.mul(t));
+	public static Vec3 project(Vec3 point, Transform cam, double focalLength){
+		Vec3 projected = cam.applyTo(point);
+		return new Vec3(
+			focalLength * projected.x / projected.z,
+			focalLength * projected.y / projected.z,
+			0
+		);
 	}
 }

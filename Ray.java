@@ -2,12 +2,12 @@
 
 import Math.Vec3;
 import java.awt.Color;
+import java.awt.image.WritableRaster;
 import java.util.Random;
 
 public final class Ray {
 	private Ray(){}
 	public static double[] trace(Vec3 origin, Vec3 direction, Environment env, int maxDepth, Random random){
-		final double EPSILON = 1e-8;
 		double[] rayColor = {1.0, 1.0, 1.0};
 		double[] incomingLight = {0.0, 0.0, 0.0};
 		
@@ -27,34 +27,27 @@ public final class Ray {
 			}
 			
 			PhysicalObject collisionObject = intersection.object;
+
+			
 			
 			//find next ray
-			Vec3 nextDirection;
-			if (collisionObject.transparency > 0){
-				
-				
-			} else {
-				nextDirection = direction.sub(intersection.normal.mul(2 * direction.dot(intersection.normal))).normalize();
-				double iv = collisionObject.specularity;
-				double variance = 1-iv;
-				nextDirection = new Vec3(
-					nextDirection.x*iv+(random.nextDouble()-.5)*variance,
-					nextDirection.y*iv+(random.nextDouble()-.5)*variance,
-					nextDirection.z*iv+(random.nextDouble()-.5)*variance
-				).normalize();
-				origin = intersection.pos;
-				direction = nextDirection;
+			Vec3 nextDirection = direction.sub(intersection.normal.mul(2 * direction.dot(intersection.normal))).normalize();
+			double iv = collisionObject.specularity;
+			double variance = 1-iv;
+			nextDirection = new Vec3(
+				nextDirection.x*iv+(random.nextDouble()-.5)*variance,
+				nextDirection.y*iv+(random.nextDouble()-.5)*variance,
+				nextDirection.z*iv+(random.nextDouble()-.5)*variance
+			).normalize();
+			origin = intersection.pos;
+			direction = nextDirection;
 			
 			
 			//calculate colors
-			Color emittedColor = collisionObject.emittedColor;
-			Color color = collisionObject.color;
+			Color emittedColor = collisionObject.emissionColor;
+			Color color = collisionObject.reflectionColor;
 
-			double[] c = {
-				color.getRed() / 255.0,
-				color.getGreen() / 255.0,
-				color.getBlue() / 255.0
-			};
+			
 			double[] emittedLight = {
 				collisionObject.luminosity*emittedColor.getRed()/255.0,
 				collisionObject.luminosity*emittedColor.getGreen()/255.0,
@@ -64,12 +57,69 @@ public final class Ray {
 			incomingLight[1] += emittedLight[1] * rayColor[1];
 			incomingLight[2] += emittedLight[2] * rayColor[2];
 
+			double[] c = {
+				color.getRed() / 255.0,
+				color.getGreen() / 255.0,
+				color.getBlue() / 255.0
+			};
 			rayColor[0] *= c[0];
 			rayColor[1] *= c[1];
 			rayColor[2] *= c[2];
-			}
 		}
 		return incomingLight;
 	}
 
+
+	
+	private static double lerp(double a, double b, double x){
+		return a*(1-x)+b*x;
+	}
+
+
+
+
+	public static void render(Vec3 start, Vec3 end, WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam) {
+		start = Point.project(start, cam, focalLength);
+		end = Point.project(end, cam, focalLength);
+		
+		double x1 = (start.x+cx);
+		double y1 = (cy-start.y);
+
+		double x2 = (end.x+cx);
+		double y2 = (cy-end.y);
+
+		if (x1 > x2){
+			double temp = x1;
+			x1 = x2;
+			x2 = temp;
+			temp = y1;
+			y1 = y2;
+			y2 = temp;
+		}
+
+		double c = Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+		double dx = (x2-x1)/c;
+		double dy = (y2-y1)/c;
+
+		
+
+		int[] color = {
+			255,
+			255,
+			255,
+			255
+		};
+		for (double x = x1, y = y1; x < x2; x+=dx, y+=dy){
+			if (x < 0 || x > 512 || y < 0 || y > 512){
+				break;
+			}
+			raster.setPixel((int)x, (int)y, color);
+		}
+		for (double x = x2, y = y2; x > x1; x-=dx, y-=dy){
+			if (x < 0 || x > 512 || y < 0 || y > 512){
+				break;
+			}
+			raster.setPixel((int)x, (int)y, color);
+		}
+	}
 }

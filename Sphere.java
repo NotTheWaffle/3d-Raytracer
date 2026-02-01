@@ -31,9 +31,9 @@ public class Sphere extends PhysicalObject{
 		int minY = Math.max(0, screenY-radius);
 		int maxY = Math.min(zBuffer[0].length - 1, screenY+radius);
 		Color color = new Color(
-			this.color.getRed()+emittedColor.getRed(),
-			this.color.getGreen()+emittedColor.getGreen(),
-			this.color.getBlue()+emittedColor.getBlue()
+			this.reflectionColor.getRed()+emissionColor.getRed(),
+			this.reflectionColor.getGreen()+emissionColor.getGreen(),
+			this.reflectionColor.getBlue()+emissionColor.getBlue()
 		);
 		int[] rgb = {
 			color.getRed(),

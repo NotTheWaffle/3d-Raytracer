@@ -16,7 +16,27 @@ public class Mesh extends PhysicalObject{
 		this.triangles = triangles;
 		this.bounds = bounds;
 	}
-	public static Mesh loadObj(String filename, boolean rescale, Color color, Material material){
+	public static Mesh rectangle(double x, double y, double z, double width, Color color, Material material){
+		double radius = width/2;
+		return new Mesh(
+			new Triangle[] {
+				new Triangle(
+					new Point(new Vec3(x+radius, y, z-radius), 0),
+					new Point(new Vec3(x-radius, y, z-radius), 0),
+					new Point(new Vec3(x-radius, y, z+radius), 0),
+					material, color
+				),
+				new Triangle(
+					new Point(new Vec3(x-radius, y, z+radius), 0),
+					new Point(new Vec3(x+radius, y, z+radius), 0),
+					new Point(new Vec3(x+radius, y, z-radius), 0),
+					material, color
+				)
+			},
+			new AABB(x+radius, y, y+radius).addPoint(x-radius, y, z-radius)
+		);
+	}
+	public static Mesh loadObj(String filename, double size, Color color, Material material){
 		filename = "Models/"+filename+".obj";
 		System.out.println("Loading "+filename+"... ");
 		
@@ -69,13 +89,13 @@ public class Mesh extends PhysicalObject{
 		System.out.println("  Loaded "+triangles.size()+" triangles");
 		System.out.println("  Loaded "+points.size()+" points");
 		System.out.println(filename+" successfully loaded");
-		if (rescale){
+		if (size != 0){
 			double xrange = maxX-minX;
 			double yrange = maxY-minY;
 			double zrange = maxZ-minZ;
 			double maxRange = Math.max(Math.max(xrange,yrange),zrange);
 
-			double scale = 1/maxRange;
+			double scale = size/maxRange;
 
 			xrange *= scale;
 			yrange *= scale;
@@ -94,7 +114,7 @@ public class Mesh extends PhysicalObject{
 		return new Mesh(rTriangles, bounds);
 	}
 	public static Mesh loadObj(String filename, Material material){
-		return loadObj(filename, true, Color.white, material);
+		return loadObj(filename, 1, Color.white, material);
 	}
 	@Override
 	public void render(WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam){

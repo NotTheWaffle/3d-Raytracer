@@ -2,7 +2,7 @@
 import Math.Vec3;
 import java.util.List;
 
-public class AABB{
+public final class AABB{
 	public double maxX, maxY, maxZ, minX, minY, minZ;
 	public AABB(){
 		maxX = minX = Double.NaN;
@@ -15,12 +15,18 @@ public class AABB{
 		minZ = maxZ = z;
 	}
 	public AABB(List<Vec3> points){
-		minX = maxX = points.get(0).x;
-		minY = maxY = points.get(0).y;
-		minZ = maxZ = points.get(0).z;
+		this();
 		for (Vec3 p : points){
-			addPoint(p.x, p.y, p.z);
+			addPoint(p);
 		}
+	}
+	public AABB addTriangles(List<Triangle> tris){
+		for (Triangle tri : tris){
+			addPoint(tri.p1);
+			addPoint(tri.p2);
+			addPoint(tri.p3);
+		}
+		return this;
 	}
 	public boolean testIntersection(Vec3 origin, Vec3 direction){
 		double tx0 = (minX-origin.x)/direction.x;
@@ -47,10 +53,7 @@ public class AABB{
 		if (texit < tenter){
 			return false;
 		}
-		if (texit < 0){
-			return false;
-		}
-		return true;
+		return texit >= 0;
 	}
 	/**
 	 * @param x
@@ -68,5 +71,11 @@ public class AABB{
 		if (!(z < maxZ)) maxZ = z;
 		if (!(z > minZ)) minZ = z;
 		return this;
+	}
+	public AABB addPoint(Vec3 vec){
+		return addPoint(vec.x, vec.y, vec.z);
+	}
+	public AABB addPoint(Point point){
+		return addPoint(point.pos.x, point.pos.y, point.pos.z);
 	}
 }
