@@ -1,4 +1,5 @@
 
+import Math.Pair;
 import Math.Vec3;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
@@ -45,23 +46,23 @@ public class BVH {
 		node0 = new BVH(side0);
 		node1 = new BVH(side1);
 	}
-	public Intersection getIntersection(Vec3 origin, Vec3 direction){
+	public Pair<Vec3, Vec3> getIntersection(Vec3 origin, Vec3 direction){
 		if (!bounds.testIntersection(origin, direction)) return null;
-		Intersection intersection = null;
+		Pair<Vec3, Vec3> intersection = null;
 		if (node0 != null) {
 			intersection = node0.getIntersection(origin, direction);
 		}
 		if (node1 != null){
-			Intersection localIntersection = node1.getIntersection(origin, direction);
-			if (localIntersection != null && (intersection == null || origin.dist(intersection.pos) > origin.dist(localIntersection.pos))){
+			Pair<Vec3, Vec3> localIntersection = node1.getIntersection(origin, direction);
+			if (localIntersection != null && (intersection == null || origin.dist(intersection.t0) > origin.dist(localIntersection.t0))){
 				intersection = localIntersection;
 			}
 		}
 		if (triangles != null){
 			for (Triangle tri : triangles){
-				Intersection localIntersection = tri.getIntersection(origin, direction);
+				Pair<Vec3, Vec3> localIntersection = tri.getIntersection(origin, direction);
 				if (localIntersection == null) continue;
-				if (intersection == null || origin.dist(intersection.pos) > origin.dist(localIntersection.pos)){
+				if (intersection == null || origin.dist(intersection.t0) > origin.dist(localIntersection.t0)){
 					intersection = localIntersection;
 				}
 			}
@@ -69,9 +70,6 @@ public class BVH {
 		return intersection;
 	}
 	public void render(WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam) {
-	
-
-		
 		if (node0 != null) {
 			node0.render(raster, focalLength, cx, cy, zBuffer, cam);
 		}

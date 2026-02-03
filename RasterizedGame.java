@@ -74,26 +74,16 @@ public class RasterizedGame extends Game{
 		}
 	}
 	
+	@Override
 	public void generateFrame(){
 		long renderStart = System.nanoTime();
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		WritableRaster raster = image.getRaster();
-		Vec3 light = cam.getForwardVector();
 		clearZBuffer();
-		
-		for (PhysicalObject p : env.physicalObjects){
-			if (p instanceof Mesh mesh){
-				for (Triangle triangle : mesh.triangles){
-					triangle.recolor(light);
-				}
-			}
-		}
+
 		
 		for (PhysicalObject physicalObjects : env.physicalObjects){
 			physicalObjects.render(raster, focalLength, cx, cy, zBuffer, cam);
-		}
-		for (Point point : env.points){
-			point.render(raster, focalLength, cx, cy, zBuffer, cam);
 		}
 		new Point(new Vec3(0, 0, 0), 1).render(raster, focalLength, cx, cy, zBuffer, cam);
 		Graphics2D g2d = image.createGraphics();

@@ -1,68 +1,51 @@
 
+import Math.Pair;
 import Math.Vec3;
-import java.awt.Color;
 import java.awt.image.WritableRaster;
+import java.util.List;
 
-public final class Triangle extends PhysicalObject{
-	public final Point p1;
-	public final Point p2;
-	public final Point p3;
-	private final Vec3 normal;
-	public Color raytracedColor;
-	
-	public Triangle(Point p1, Point p2, Point p3, Material material, Color color){
-		super(material, color);
+public final class Triangle{
+	public final Vec3 p1;
+	public final Vec3 p2;
+	public final Vec3 p3;
+	public final Vec3 normal;
+	public Triangle(Vec3 p1, Vec3 p2, Vec3 p3){
 		this.p1 = p1;
 		this.p2 = p2;
 		this.p3 = p3;
 		this.normal = normal();
-		recolor(new Vec3(0, 1, 0).normalize());
 	}
-	public Triangle(int i1, int i2, int i3, Point[] points, Material material){
-		this(points[i1], points[i2], points[i3], material, Color.white);
-	}
-	public Triangle(int i1, int i2, int i3, Point[] points, Material material, Color color){
-		this(points[i1], points[i2], points[i3], material, color);
-	}
-	
-	public void recolor(Vec3 light){
-		double coeff = -light.dot(normal);
-		if (coeff < 0) coeff = 0;
-		this.raytracedColor = new Color(
-			(int) (reflectionColor.getRed() * coeff),
-			(int) (reflectionColor.getGreen() * coeff),
-			(int) (reflectionColor.getBlue() * coeff)
-		);
+	public Triangle(int i1, int i2, int i3, List<Vec3> points){
+		this(points.get(i1), points.get(i2), points.get(i3));
 	}
 	public Vec3 center(){
-		return (p1.pos.add(p2.pos).add(p3.pos)).mul(1.0/3);
+		return (p1.add(p2).add(p3)).mul(1.0/3);
 	}
-	public Vec3 normal() {
-		Vec3 edge1 = p2.pos.sub(p1.pos);
-		Vec3 edge2 = p3.pos.sub(p1.pos);
+	private Vec3 normal() {
+		Vec3 edge1 = p2.sub(p1);
+		Vec3 edge2 = p3.sub(p1);
 		return edge1.cross(edge2).normalize();
 	}
-	@Override
 	public void render(WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam) {
-		Vec3 p1 = cam.applyTo(this.p1.pos);
-		Vec3 p2 = cam.applyTo(this.p2.pos);
-		Vec3 p3 = cam.applyTo(this.p3.pos);
+		Vec3 projectedP1 = cam.applyTo(this.p1);
+		Vec3 projectedP2 = cam.applyTo(this.p2);
+		Vec3 projectedP3 = cam.applyTo(this.p3);
 		
-		if (p1.z < 0 || p2.z < 0 || p3.z < 0) return;
+		if (projectedP1.z < 0 || projectedP2.z < 0 || projectedP3.z < 0) return;
 
-		double iz1 = 1.0 / p1.z;
-		double iz2 = 1.0 / p2.z;
-		double iz3 = 1.0 / p3.z;
+		double iz1 = 1.0 / projectedP1.z;
+		double iz2 = 1.0 / projectedP2.z;
+		double iz3 = 1.0 / projectedP3.z;
 
 
-		int x1 = (int)( focalLength * p1.x / p1.z) + cx;
-		int y1 = (int)(-focalLength * p1.y / p1.z) + cy;
+		int x1 = (int)( focalLength * projectedP1.x / projectedP1.z) + cx;
+		int y1 = (int)(-focalLength * projectedP1.y / projectedP1.z) + cy;
 
-		int x2 = (int)( focalLength * p2.x / p2.z) + cx;
-		int y2 = (int)(-focalLength * p2.y / p2.z) + cy;
+		int x2 = (int)( focalLength * projectedP2.x / projectedP2.z) + cx;
+		int y2 = (int)(-focalLength * projectedP2.y / projectedP2.z) + cy;
 
-		int x3 = (int)( focalLength * p3.x / p3.z) + cx;
-		int y3 = (int)(-focalLength * p3.y / p3.z) + cy;
+		int x3 = (int)( focalLength * projectedP3.x / projectedP3.z) + cx;
+		int y3 = (int)(-focalLength * projectedP3.y / projectedP3.z) + cy;
 
 		int minX = Math.max(0, Math.min(x1, Math.min(x2, x3)));
 		int maxX = Math.min(zBuffer.length - 1, Math.max(x1, Math.max(x2, x3)));
@@ -73,9 +56,9 @@ public final class Triangle extends PhysicalObject{
 		if (area == 0) return;
 
 		int[] rgb = {
-			raytracedColor.getRed(),
-			raytracedColor.getGreen(),
-			raytracedColor.getBlue(),
+			255,
+			255,
+			255,
 			255
 		};
 		double ia = 1/area;
@@ -108,54 +91,51 @@ public final class Triangle extends PhysicalObject{
 	private static double edge(int x1, int y1, int x2, int y2, int x, int y) {
 		return (x - x1) * (y2 - y1) - (y - y1) * (x2 - x1);
 	}
-	@Override
-	public Intersection getIntersection(Vec3 rayOrigin, Vec3 rayVector){
-
+	public Pair<Vec3, Vec3> getIntersection(Vec3 rayOrigin, Vec3 rayVector){
 		final double EPSILON = 1e-8;
 
-		Vec3 edge1 = p2.pos.sub(p1.pos);
-		Vec3 edge2 = p3.pos.sub(p1.pos);
+		Vec3 edge1 = p2.sub(p1);
+		Vec3 edge2 = p3.sub(p1);
 		Vec3 h = rayVector.cross(edge2);
-		
 
 		double a = edge1.dot(h);
 
-		if (a > -EPSILON && a < EPSILON) {
-			return null;
-		}
+		if (a > -EPSILON && a < EPSILON) return null;
 
 		double f = 1.0 / a;
-		Vec3 s = rayOrigin.sub(p1.pos);
+		Vec3 s = rayOrigin.sub(p1);
 		double u = f * s.dot(h);
 
-		if (u < 0.0 || u > 1.0) {
-			return null;
-		}
+		if (u < 0.0 || u > 1.0) return null;
 
 		Vec3 q = s.cross(edge1);
 		double v = f * rayVector.dot(q);
 
-		if (v < 0.0 || u + v > 1.0) {
-			return null;
-		}
+		if (v < 0.0 || u + v > 1.0) return null;
 
 		double t = f * edge2.dot(q);
-		if (t > EPSILON) {
-			return new Intersection(rayVector.mul(t).add(rayOrigin), this, this.normal);
-		} else {
-			return null;
-		}
+		if (t < EPSILON) return null;
+
+		return new Pair<>(rayVector.mul(t).add(rayOrigin), this.normal);
 	}
+
 	@Override
 	public int hashCode(){
 		return p1.hashCode() ^ p2.hashCode() ^ p3.hashCode();
 	}
+
 	@Override
 	public boolean equals(Object o){
-		if (o == null || !(o instanceof Triangle)){
+		if (o == this) return true;
+		if (o instanceof Triangle t){
+			return t.p1.equals(p1) && t.p2.equals(p2) && t.p3.equals(p3);
+		} else {
 			return false;
 		}
-		Triangle t = (Triangle) o;
-		return t.p1.equals(p1) && t.p2.equals(p2) && t.p3.equals(p3);
+	}
+
+	@Override
+	public String toString(){
+		return "Tri:("+p1+", "+p2+", "+p3+")";
 	}
 }

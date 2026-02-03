@@ -70,17 +70,12 @@ public final class Ray {
 	}
 
 
-	
-	private static double lerp(double a, double b, double x){
-		return a*(1-x)+b*x;
-	}
-
-
-
 
 	public static void render(Vec3 start, Vec3 end, WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam) {
 		start = Point.project(start, cam, focalLength);
 		end = Point.project(end, cam, focalLength);
+
+		if (start.z < 0 || end.z < 0) return;
 		
 		double x1 = (start.x+cx);
 		double y1 = (cy-start.y);

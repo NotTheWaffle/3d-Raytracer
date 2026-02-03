@@ -6,7 +6,7 @@ import java.awt.image.WritableRaster;
 public final class RectangularPrism extends PhysicalObject{
 	public double maxX, maxY, maxZ, minX, minY, minZ;
 	public RectangularPrism(double x0, double x1, double y0, double y1, double z0, double z1, Material material, Color color){
-		super(material, color);
+		super(color, material);
 		this.maxX = Math.max(x0, x1);
 		this.minX = Math.min(x0, x1);
 		

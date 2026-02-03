@@ -9,9 +9,9 @@ public class Sphere extends PhysicalObject{
 	public Sphere(Vec3 p, double radius, Material material){
 		this(p, radius, new Color((int)(Math.random()*16777216)), material);
 	}
-	public Sphere(Vec3 p, double radius, Color c, Material material){
-		super(material, c);
-		this.point = p;
+	public Sphere(Vec3 point, double radius, Color color, Material material){
+		super(color, material);
+		this.point = point;
 		this.radius = radius;
 	}
 	@Override
@@ -24,12 +24,12 @@ public class Sphere extends PhysicalObject{
 		int screenY = (int)(-focalLength * p.y / p.z) + cy;
 
 
-		int radius = Math.max(1,(int) (focalLength * (this.radius / p.z)));
+		int projectedRadius = Math.max(1, (int) (focalLength * (this.radius / p.z)));
 
-		int minX = Math.max(0, screenX-radius);
-		int maxX = Math.min(zBuffer.length - 1, screenX+radius);
-		int minY = Math.max(0, screenY-radius);
-		int maxY = Math.min(zBuffer[0].length - 1, screenY+radius);
+		int minX = Math.max(0, screenX-projectedRadius);
+		int maxX = Math.min(zBuffer.length - 1, screenX+projectedRadius);
+		int minY = Math.max(0, screenY-projectedRadius);
+		int maxY = Math.min(zBuffer[0].length - 1, screenY+projectedRadius);
 		Color color = new Color(
 			this.reflectionColor.getRed()+emissionColor.getRed(),
 			this.reflectionColor.getGreen()+emissionColor.getGreen(),
@@ -46,7 +46,7 @@ public class Sphere extends PhysicalObject{
 			for (int x = minX; x <= maxX; x++) {
 				int dx = x-screenX;
 				int dy = y-screenY;
-				if (dx * dx + dy * dy < radius * radius) {
+				if (dx * dx + dy * dy < projectedRadius * projectedRadius) {
 
 					if (p.z < zBuffer[x][y]) {
 						zBuffer[x][y] = p.z;

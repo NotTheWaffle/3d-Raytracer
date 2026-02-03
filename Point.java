@@ -42,7 +42,7 @@ public class Point {
 				int dy = y-screenY;
 				if (dx * dx + dy * dy < radius * radius) {
 
-					if (true || p.z < zBuffer[x][y]) {
+					if (p.z < zBuffer[x][y]) {
 						zBuffer[x][y] = p.z;
 						raster.setPixel(x, y, rgb);
 					}

@@ -1,8 +1,6 @@
 package Math;
 
-import java.io.Serializable;
-
-public class Vec3 implements Serializable{
+public class Vec3{
 	public final double x, y, z;
 
 	public Vec3(double x, double y, double z) {
@@ -57,6 +55,23 @@ public class Vec3 implements Serializable{
 			z * v.x - x * v.z,
 			x * v.y - y * v.x
 		);
+	}
+
+	@Override
+	public int hashCode(){
+		return
+			Long.hashCode(Double.doubleToRawLongBits(x)) ^
+			Long.hashCode(Double.doubleToRawLongBits(y)) ^
+			Long.hashCode(Double.doubleToRawLongBits(z));
+	}
+	@Override
+	public boolean equals(Object o){
+		if (this == o) return true;
+		if (o instanceof Vec3 v){
+			return x == v.x && y == v.y && z == v.z;
+		} else {
+			return false;
+		}
 	}
 	@Override
 	public String toString(){
