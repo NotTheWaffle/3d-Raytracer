@@ -28,9 +28,9 @@ public class Sphere extends PhysicalObject{
 		int maxY = Math.min(zBuffer[0].length - 1, screenY+projectedRadius);
 		
 		int[] rgb = {
-			(int) (255 * this.reflectionColor[0]+emissionColor[0]),
-			(int) (255 * this.reflectionColor[1]+emissionColor[1]),
-			(int) (255 * this.reflectionColor[2]+emissionColor[2]),
+			(int) (255 * (this.reflectionColor[0]+emissionColor[0])),
+			(int) (255 * (this.reflectionColor[1]+emissionColor[1])),
+			(int) (255 * (this.reflectionColor[2]+emissionColor[2])),
 			255
 		};
 		
@@ -53,18 +53,17 @@ public class Sphere extends PhysicalObject{
 		final double EPSILON = 1e-8;
 		Vec3 l = rayOrigin.sub(point);
 		
-		double a = 1;
 		double b = 2 * rayVector.dot(l);
 		double c = l.dot(l) - radius*radius;
 
 
-		double discriminant = b*b - 4*a*c;
+		double discriminant = b*b - 4*c;
 
 		if (discriminant < 0) return null;
 		double sqrtD = Math.sqrt(discriminant);
 
-		double t0 = (-b - sqrtD) / (2 * a);
-		double t1 = (-b + sqrtD) / (2 * a);
+		double t0 = (-b - sqrtD) / 2;
+		double t1 = (-b + sqrtD) / 2;
 
 		double t = Double.POSITIVE_INFINITY;
 		

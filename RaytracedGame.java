@@ -16,6 +16,9 @@ import javax.imageio.ImageIO;
 
 public class RaytracedGame extends Game{
 	private final double focalLength;
+	
+	private final double focusDepth = 3;
+	private final double focus = .1;
 	// this is only for rasterized rendering
 	private final double[][] zBuffer;
 	// this is distance per 16 ms
@@ -157,10 +160,12 @@ public class RaytracedGame extends Game{
 	
 	private void raytraceRange(int x1, int y1, int x2, int y2, WritableRaster raster, int samples){
 		Random random = ThreadLocalRandom.current();
-		Vec3 origin = cam.translation;
 		for (int x = x1; x < x2; x += 1){
 			for (int y = y1; y < y2; y += 1){
-				Vec3 vector = cam.rot.transform(new Vec3(x-cx, cy-y, focalLength).normalize());
+				Vec3 origin = cam.translation.add(new Vec3((random.nextDouble()-.5)*focus, (random.nextDouble()-.5)*focus, (random.nextDouble()-.5)*focus));
+				Vec3 pixelPoint = cam.translation.add(cam.rot.transform(new Vec3(x-cx, cy-y, focalLength).mul(focusDepth/focalLength)));
+				//Vec3 vector = cam.rot.transform((new Vec3(x-cx, cy-y, focalLength)).normalize());
+				Vec3 vector = pixelPoint.sub(origin).normalize();
 				
 				Pixel pixel = pixelBuffer[y][x];
 				int[] color = new int[3];
@@ -170,6 +175,7 @@ public class RaytracedGame extends Game{
 					color[1] += (int) (255 * col[1]);
 					color[2] += (int) (255 * col[2]);
 				}
+
 				pixel.addSample(color, samples);
 				raster.setPixel(x, y, pixel.getColor());
 			}

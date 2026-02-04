@@ -22,23 +22,27 @@ public final class Ray {
 			}
 
 			//break if no intersection
-			if (intersection == null) {
-				break;
-			}
+			if (intersection == null) break;
+			
 			
 			PhysicalObject object = intersection.object;
 
 			
 			
-			//find next ray
-			Vec3 diffuseDirection = new Vec3(random.nextDouble() - .5, random.nextDouble() - .5, random.nextDouble() - .5);
-			if (diffuseDirection.dot(intersection.normal) < 0) diffuseDirection = diffuseDirection.mul(-1);
+			// find next ray
 			Vec3 nextDirection;
-			if (random.nextDouble() < object.specularityChance){
-				Vec3 specularDirection = direction.sub(intersection.normal.mul(2 * direction.dot(intersection.normal))).normalize();
-				nextDirection = lerp(diffuseDirection, specularDirection, object.specularity).normalize();
+			if (object.transparency == 0){
+				Vec3 diffuseDirection = new Vec3(random.nextDouble() - .5, random.nextDouble() - .5, random.nextDouble() - .5);
+				if (diffuseDirection.dot(intersection.normal) < 0) diffuseDirection = diffuseDirection.mul(-1);
+				
+				if (random.nextDouble() < object.specularityChance){
+					Vec3 specularDirection = direction.sub(intersection.normal.mul(2 * direction.dot(intersection.normal))).normalize();
+					nextDirection = lerp(diffuseDirection, specularDirection, object.specularity).normalize();
+				} else {
+					nextDirection = diffuseDirection.normalize();
+				}
 			} else {
-				nextDirection = diffuseDirection.normalize();
+				nextDirection = direction;
 			}
 			origin = intersection.pos;
 			direction = nextDirection;
@@ -54,8 +58,7 @@ public final class Ray {
 			rayColor[1] *= object.reflectionColor[1];
 			rayColor[2] *= object.reflectionColor[2];
 
-			if (rayColor[0] < .001 && rayColor[1] < .001 && rayColor[2] < .001){
-			//	System.out.println("low light");
+			if (rayColor[0] < .01 && rayColor[1] < .01 && rayColor[2] < .01){
 				break;
 			}
 		}
@@ -97,7 +100,8 @@ public final class Ray {
 		double dx = (x2-x1)/c;
 		double dy = (y2-y1)/c;
 
-		
+		int width = raster.getWidth();
+		int height = raster.getHeight();
 
 		int[] color = {
 			255,
@@ -112,7 +116,7 @@ public final class Ray {
 			raster.setPixel((int)x, (int)y, color);
 		}
 		for (double x = x2, y = y2; x > x1; x-=dx, y-=dy){
-			if (x < 0 || x > 512 || y < 0 || y > 512){
+			if (x < 0 || x > width || y < 0 || y > height){
 				break;
 			}
 			raster.setPixel((int)x, (int)y, color);

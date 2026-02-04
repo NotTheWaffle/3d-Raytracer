@@ -30,21 +30,24 @@ public final class RectangularPrism extends PhysicalObject{
 			txenter = txexit;
 			txexit = temp;
 		}
-
 		
-		double ty0 = (minY-origin.y)/direction.y;
-		double ty1 = (maxY-origin.y)/direction.y;
+		double tyenter = (minY-origin.y)/direction.y;
+		double tyexit = (maxY-origin.y)/direction.y;
+
+		if (tyenter > tyexit){
+			temp = tyenter;
+			tyenter = tyexit;
+			tyexit = temp;
+		}
 		
-		double tz0 = (minZ-origin.z)/direction.z;
-		double tz1 = (maxZ-origin.z)/direction.z;
+		double tzenter = (minZ-origin.z)/direction.z;
+		double tzexit = (maxZ-origin.z)/direction.z;
 
-
-		double tyenter = Math.min(ty0, ty1);
-		double tyexit = Math.max(ty0, ty1);
-
-		double tzenter = Math.min(tz0, tz1);
-		double tzexit = Math.max(tz0, tz1);
-
+		if (tzenter > tzexit){
+			temp = tzenter;
+			tzenter = tzexit;
+			tzexit = temp;
+		}
 
 		Vec3 normal = null;
 		double tenter = Double.NEGATIVE_INFINITY;

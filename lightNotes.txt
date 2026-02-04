@@ -1,4 +1,0 @@
-cone fundamentals
-metamers
-color of object is a reflectance function = list of wavelengths it reflects
-convert to rgb via cone fundamental functions
