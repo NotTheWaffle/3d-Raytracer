@@ -169,9 +169,9 @@ public class Mesh extends PhysicalObject{
 		return new Mesh(triangles, material);
 	}
 	@Override
-	public void render(WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam){
+	public void render(WritableRaster raster, double[][] zBuffer, Viewport camera) {
 		for (Triangle tri : triangles){
-			tri.render(raster, focalLength, cx, cy, zBuffer, cam);
+			tri.render(raster, zBuffer, camera);
 		}
 	}
 	@Override

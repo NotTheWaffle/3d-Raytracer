@@ -33,10 +33,10 @@ public final class Triangle{
 		Vec3 edge2 = p3.sub(p1);
 		return edge1.cross(edge2).normalize();
 	}
-	public void render(WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam) {
-		Vec3 projectedP1 = cam.applyTo(this.p1);
-		Vec3 projectedP2 = cam.applyTo(this.p2);
-		Vec3 projectedP3 = cam.applyTo(this.p3);
+	public void render(WritableRaster raster, double[][] zBuffer, Viewport camera) {
+		Vec3 projectedP1 = camera.applyTo(this.p1);
+		Vec3 projectedP2 = camera.applyTo(this.p2);
+		Vec3 projectedP3 = camera.applyTo(this.p3);
 		
 		if (projectedP1.z < 0 || projectedP2.z < 0 || projectedP3.z < 0) return;
 
@@ -45,14 +45,14 @@ public final class Triangle{
 		double iz3 = 1.0 / projectedP3.z;
 
 
-		int x1 = (int)( focalLength * projectedP1.x / projectedP1.z) + cx;
-		int y1 = (int)(-focalLength * projectedP1.y / projectedP1.z) + cy;
+		int x1 = (int) camera.getX(projectedP1);
+		int y1 = (int) camera.getY(projectedP1);
 
-		int x2 = (int)( focalLength * projectedP2.x / projectedP2.z) + cx;
-		int y2 = (int)(-focalLength * projectedP2.y / projectedP2.z) + cy;
+		int x2 = (int) camera.getX(projectedP2);
+		int y2 = (int) camera.getY(projectedP2);
 
-		int x3 = (int)( focalLength * projectedP3.x / projectedP3.z) + cx;
-		int y3 = (int)(-focalLength * projectedP3.y / projectedP3.z) + cy;
+		int x3 = (int) camera.getX(projectedP3);
+		int y3 = (int) camera.getY(projectedP3);
 
 		int minX = Math.max(0, Math.min(x1, Math.min(x2, x3)));
 		int maxX = Math.min(zBuffer.length - 1, Math.max(x1, Math.max(x2, x3)));

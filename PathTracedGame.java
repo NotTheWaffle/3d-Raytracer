@@ -14,18 +14,15 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.imageio.ImageIO;
 
-public class RaytracedGame extends Game{
-	private final double focalLength;
+public class PathTracedGame extends Game{
 	
-	private final double focusDepth;
-	private final double focus;
 	// this is only for rasterized rendering
 	private final double[][] zBuffer;
 	// this is distance per 16 ms
 	public final double speed = .02;
 	public final double rotSpeed = .03;
 	// these represent the entire model
-	private final Transform cam;
+	private final Viewport camera;
 	private final Environment env;
 
 	public boolean raytrace = false;
@@ -33,22 +30,13 @@ public class RaytracedGame extends Game{
 	
 	public static long logicTime;
 
-	private final int cx;
-	private final int cy;
-
-	public RaytracedGame(int width, int height, double fov, double focusDepth, double focus, Environment env){
-		super(width, height);
+	public PathTracedGame(Viewport camera, Environment env){
+		super(camera.screenWidth, camera.screenHeight);
 		
-		cx = width / 2;
-		cy = height / 2;
-
 		this.env = env;
-		cam = new Transform().translateAbsolute(new Vec3(0, 0, -1));
+		this.camera = camera;
+		camera.transform.translateAbsolute(new Vec3(0, 0, -1));
 	
-
-		this.focalLength = (double) width / (2 * Math.tan(fov/2));
-		this.focusDepth = focusDepth;
-		this.focus = focus;
 		zBuffer = new double[width][height];
 
 		pixelBuffer = new Pixel[height][width];
@@ -70,19 +58,19 @@ public class RaytracedGame extends Game{
 		double relativeSpeed = this.speed * dt/16.0;
 		double relativeRotSpeed = this.rotSpeed * dt/16.0;
 
-		if (input.keys['W']) 			{resetPixelBuffer(); cam.translate(0, 0,  relativeSpeed);}
-		if (input.keys['A']) 			{resetPixelBuffer(); cam.translate(-relativeSpeed, 0, 0);}
-		if (input.keys['S']) 			{resetPixelBuffer(); cam.translate(0, 0, -relativeSpeed);}
-		if (input.keys['D']) 			{resetPixelBuffer(); cam.translate( relativeSpeed, 0, 0);}
-		if (input.keys[' ']) 			{resetPixelBuffer(); cam.translate(0,  relativeSpeed, 0);}
-		if (input.keys[Input.SHIFT]) 	{resetPixelBuffer(); cam.translate(0, -relativeSpeed, 0);}
+		if (input.keys['W']) 			{resetPixelBuffer(); camera.translateZ( relativeSpeed);}
+		if (input.keys['A']) 			{resetPixelBuffer(); camera.translateX(-relativeSpeed);}
+		if (input.keys['S']) 			{resetPixelBuffer(); camera.translateZ(-relativeSpeed);}
+		if (input.keys['D']) 			{resetPixelBuffer(); camera.translateX( relativeSpeed);}
+		if (input.keys[' ']) 			{resetPixelBuffer(); camera.translateY( relativeSpeed);}
+		if (input.keys[Input.SHIFT]) 	{resetPixelBuffer(); camera.translateY(-relativeSpeed);}
 
-		if (input.keys[Input.UP_ARROW]) 	{resetPixelBuffer(); cam.rotateX( relativeRotSpeed);}
-		if (input.keys[Input.DOWN_ARROW]) 	{resetPixelBuffer(); cam.rotateX(-relativeRotSpeed);}
-		if (input.keys[Input.LEFT_ARROW]) 	{resetPixelBuffer(); cam.rotateY( relativeRotSpeed);}
-		if (input.keys[Input.RIGHT_ARROW]) 	{resetPixelBuffer(); cam.rotateY(-relativeRotSpeed);}
-		if (input.keys['Q']) 				{resetPixelBuffer(); cam.rotateZ(-relativeRotSpeed);}
-		if (input.keys['E']) 				{resetPixelBuffer(); cam.rotateZ( relativeRotSpeed);}
+		if (input.keys[Input.UP_ARROW]) 	{resetPixelBuffer(); camera.rotateX( relativeRotSpeed);}
+		if (input.keys[Input.DOWN_ARROW]) 	{resetPixelBuffer(); camera.rotateX(-relativeRotSpeed);}
+		if (input.keys[Input.LEFT_ARROW]) 	{resetPixelBuffer(); camera.rotateY( relativeRotSpeed);}
+		if (input.keys[Input.RIGHT_ARROW]) 	{resetPixelBuffer(); camera.rotateY(-relativeRotSpeed);}
+		if (input.keys['Q']) 				{resetPixelBuffer(); camera.rotateZ(-relativeRotSpeed);}
+		if (input.keys['E']) 				{resetPixelBuffer(); camera.rotateZ( relativeRotSpeed);}
 
 		if (input.keys['[']) 	{raytrace = true; resetPixelBuffer();}
 		if (input.keys[']']) 	raytrace = false;
@@ -111,14 +99,14 @@ public class RaytracedGame extends Game{
 		clearZBuffer();
 		
 		for (PhysicalObject object : env.physicalObjects){
-			object.render(raster, focalLength, cx, cy, zBuffer, cam);
+			object.render(raster, zBuffer, camera);
 		}
 		for (PhysicalObject object : env.physicalObjects){
 			if (object instanceof Mesh mesh){
 				for (Triangle tri : mesh.triangles){
 					//Ray.render(tri.center(), tri.center().add(tri.normal), raster, focalLength, cx, cy, zBuffer, cam);
 				}
-				mesh.bvh.render(raster, focalLength, cx, cy, zBuffer, cam);
+				mesh.bvh.render(raster, zBuffer, camera);
 			}
 		}
 		return image;
@@ -156,31 +144,30 @@ public class RaytracedGame extends Game{
 			} catch (IOException e) {}
 		}
 		if (raytrace){
-			nextFrame = renderRaytraced(64, 4);
+			nextFrame = renderRaytraced(25, 4);
 		} else {
 			nextFrame = renderRasterized();
 		}
 		
 		Graphics2D g2d = nextFrame.createGraphics();
-		long renderTime = System.nanoTime()-renderStart;
-		g2d.setColor(Color.RED);
+		long renderTime = System.nanoTime() - renderStart;
+		g2d.setColor(Color.WHITE);
 		g2d.drawString("Render (ms):"+renderTime/1_000_000.0,0,20);
 		g2d.drawString("Samples: "+pixelBuffer[0][0].samples, 0, 40);
-		g2d.drawString(Pixel.count+" vs", 0, 60);
-		g2d.drawString(Pixel.count2+" ",0 ,80);
+		g2d.drawString(camera.transform.toString(), 0, 60);
 	}
 	
 	private void raytraceRange(int x1, int y1, int x2, int y2, WritableRaster raster, int samples){
 		Random random = ThreadLocalRandom.current();
-		Vec3 origin = cam.translation;
+		Vec3 origin = camera.transform.translation;
 		for (int x = x1; x < x2; x += 1){
 			for (int y = y1; y < y2; y += 1){
 				Vec3 vector;
-				if (focus == 0){
-					vector = cam.rot.transform((new Vec3(x-cx, cy-y, focalLength)).normalize());
+				if (camera.focus == 0){
+					vector = camera.transform.rot.transform((new Vec3(x-camera.cx, camera.cy-y, camera.focalLength)).normalize());
 				} else {
-					origin = cam.translation.add(new Vec3((random.nextDouble()-.5)*focus, (random.nextDouble()-.5)*focus, (random.nextDouble()-.5)*focus));
-					Vec3 pixelPoint = cam.translation.add(cam.rot.transform(new Vec3(x-cx, cy-y, focalLength).mul(focusDepth/focalLength)));
+					origin = camera.transform.translation.add(new Vec3((random.nextDouble()-.5)*camera.focus, (random.nextDouble()-.5)*camera.focus, (random.nextDouble()-.5)*camera.focus));
+					Vec3 pixelPoint = camera.transform.translation.add(camera.transform.rot.transform(new Vec3(x-camera.cx, camera.cy-y, camera.focalLength).mul(camera.focusDistance/camera.focalLength)));
 					vector = pixelPoint.sub(origin).normalize();
 				}
 				

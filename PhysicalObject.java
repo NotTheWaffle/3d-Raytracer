@@ -22,5 +22,5 @@ public abstract class PhysicalObject {
 		this.specularityChance = material.specularityChance;
 	}
 	public abstract Intersection getIntersection(Vec3 origin, Vec3 direction);
-	public abstract void render(WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam);
+	public abstract void render(WritableRaster raster, double[][] zBuffer, Viewport camera);
 }

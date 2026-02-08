@@ -72,7 +72,7 @@ public final class RectangularPrism extends PhysicalObject{
 	}
 	
 	@Override
-	public void render(WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam) {
+	public void render(WritableRaster raster, double[][] zBuffer, Viewport camera) {
 		Vec3 p0 = new Vec3(maxX, maxY, maxZ);
 		Vec3 p1 = new Vec3(maxX, maxY, minZ);
 		Vec3 p2 = new Vec3(maxX, minY, maxZ);
@@ -82,19 +82,19 @@ public final class RectangularPrism extends PhysicalObject{
 		Vec3 p6 = new Vec3(minX, minY, maxZ);
 		Vec3 p7 = new Vec3(minX, minY, minZ);
 		// top face
-		Ray.render(p0, p1, raster, focalLength, cx, cy, zBuffer, cam);
-		Ray.render(p1, p3, raster, focalLength, cx, cy, zBuffer, cam);
-		Ray.render(p3, p2, raster, focalLength, cx, cy, zBuffer, cam);
-		Ray.render(p2, p0, raster, focalLength, cx, cy, zBuffer, cam);
+		Ray.render(p0, p1, raster, zBuffer, camera);
+		Ray.render(p1, p3, raster, zBuffer, camera);
+		Ray.render(p3, p2, raster, zBuffer, camera);
+		Ray.render(p2, p0, raster, zBuffer, camera);
 		// bottom face
-		Ray.render(p4, p5, raster, focalLength, cx, cy, zBuffer, cam);
-		Ray.render(p5, p7, raster, focalLength, cx, cy, zBuffer, cam);
-		Ray.render(p7, p6, raster, focalLength, cx, cy, zBuffer, cam);
-		Ray.render(p6, p4, raster, focalLength, cx, cy, zBuffer, cam);
+		Ray.render(p4, p5, raster, zBuffer, camera);
+		Ray.render(p5, p7, raster, zBuffer, camera);
+		Ray.render(p7, p6, raster, zBuffer, camera);
+		Ray.render(p6, p4, raster, zBuffer, camera);
 		// sides
-		Ray.render(p0, p4, raster, focalLength, cx, cy, zBuffer, cam);
-		Ray.render(p1, p5, raster, focalLength, cx, cy, zBuffer, cam);
-		Ray.render(p2, p6, raster, focalLength, cx, cy, zBuffer, cam);
-		Ray.render(p3, p7, raster, focalLength, cx, cy, zBuffer, cam);
+		Ray.render(p0, p4, raster, zBuffer, camera);
+		Ray.render(p1, p5, raster, zBuffer, camera);
+		Ray.render(p2, p6, raster, zBuffer, camera);
+		Ray.render(p3, p7, raster, zBuffer, camera);
 	}
 }

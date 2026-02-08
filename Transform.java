@@ -14,9 +14,6 @@ public final class Transform {
 		rotateY(EPSILON);
 		rotateZ(EPSILON);
 	}
-	public Vec3 getForwardVector(){
-		return new Vec3(rot.m02, rot.m12, rot.m22).normalize();
-	}
 
 	public Vec3 applyTo(Vec3 point){
 		return inv.transform(point.sub(translation));
@@ -77,6 +74,7 @@ public final class Transform {
 			0, 0, 1
 		);
 	}
+
 	@Override
 	public String toString(){
 		return translation.toString()+"\n"+rot.toString();

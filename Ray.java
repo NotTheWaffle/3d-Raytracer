@@ -27,7 +27,7 @@ public final class Ray {
 				intersection = localIntersection;
 			}
 
-			//break if no intersection
+			// background light
 			if (intersection == null) {
 				if (direction.dist(sunVec) < .75){
 					intersection = new Intersection(Vec3.ZERO_VEC, sun, Vec3.ZERO_VEC);
@@ -95,19 +95,19 @@ public final class Ray {
 	}
 
 
-	public static void render(Vec3 start, Vec3 end, WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam) {
-		Vec3 projectedStart = cam.applyTo(start);
-		Vec3 projectedEnd = cam.applyTo(end);
+	public static void render(Vec3 start, Vec3 end, WritableRaster raster, double[][] zBuffer, Viewport camera) {
+		Vec3 projectedStart = camera.applyTo(start);
+		Vec3 projectedEnd = camera.applyTo(end);
 		
 		
 		if (projectedStart.z < 0 || projectedEnd.z < 0) return;
 
 		
-		double x1 = ((focalLength * projectedStart.x / projectedStart.z)+cx);
-		double y1 = (cy-(focalLength * projectedStart.y / projectedStart.z));
+		double x1 = camera.getX(projectedStart);
+		double y1 = camera.getY(projectedStart);
 
-		double x2 = ((focalLength * projectedEnd.x / projectedEnd.z)+cx);
-		double y2 = (cy-(focalLength * projectedEnd.y / projectedEnd.z));
+		double x2 = camera.getX(projectedEnd);
+		double y2 = camera.getY(projectedEnd);
 
 		if (x1 > x2){
 			double temp = x1;

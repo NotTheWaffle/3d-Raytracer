@@ -17,13 +17,13 @@ public class Point {
 		this.color = c;
 		this.radius = radius;
 	}
-	public void render(WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam) {
-		Vec3 p = cam.applyTo(this.pos);
+	public void render(WritableRaster raster, double[][] zBuffer, Viewport camera) {
+		Vec3 p = camera.applyTo(this.pos);
 		if (p.z < 0) return;
 
 		
-		int screenX = (int)( focalLength * p.x / p.z) + cx;
-		int screenY = (int)(-focalLength * p.y / p.z) + cy;
+		int screenX = (int) camera.getX(p);
+		int screenY = (int) camera.getY(p);
 
 		int minX = Math.max(0, screenX-radius);
 		int maxX = Math.min(zBuffer.length - 1, screenX+radius);

@@ -80,10 +80,7 @@ public class BVH {
 	}
 	
 	public Pair<Vec3, Vec3> getIntersection(Vec3 origin, Vec3 direction){
-		return getIntersection(origin, direction, false);
-	}
-	public Pair<Vec3, Vec3> getIntersection(Vec3 origin, Vec3 direction, boolean override){
-		if (override || bounds.testIntersection(origin, direction) < 0) return null;
+		if (bounds.testIntersection(origin, direction) < 0) return null;
 		Pair<Vec3, Vec3> intersection = null;
 		if (triangles == null){
 			if (node0 == null || node1 == null){
@@ -102,12 +99,12 @@ public class BVH {
 				closeTime = farTime;
 				farTime = tempTime;
 			}
-			intersection = close.getIntersection(origin, direction, closeTime < 0);
+			intersection = closeTime < 0 ? null : close.getIntersection(origin, direction);
 			if (intersection == null){
-				intersection = far.getIntersection(origin, direction, farTime < 0);
-			} else if (false || Math.abs(closeTime - farTime) < .01){
+				intersection = farTime < 0 ? null : far.getIntersection(origin, direction);
+			} else if (intersection.t0.dist(origin) > farTime){
 				//close enough we should check both to be sure
-				Pair<Vec3, Vec3> localIntersection = far.getIntersection(origin, direction, farTime < 0);
+				Pair<Vec3, Vec3> localIntersection = farTime < 0 ? null : far.getIntersection(origin, direction);
 				if (localIntersection != null && origin.dist(intersection.t0) > origin.dist(localIntersection.t0)){
 					intersection = localIntersection;
 				}
@@ -122,15 +119,14 @@ public class BVH {
 		return intersection;
 	}
 	public double testIntersection(Vec3 origin, Vec3 direction){
-		direction = direction.normalize();
-		return bounds.testIntersection(origin, direction);
+		return bounds.testIntersection(origin, direction.normalize());
 	}
-	public void render(WritableRaster raster, double focalLength, int cx, int cy, double[][] zBuffer, Transform cam) {
+	public void render(WritableRaster raster, double[][] zBuffer, Viewport camera) {
 		if (node0 != null) {
-			node0.render(raster, focalLength, cx, cy, zBuffer, cam);
+			node0.render(raster, zBuffer, camera);
 		}
 		if (node1 != null) {
-			node1.render(raster, focalLength, cx, cy, zBuffer, cam);
+			node1.render(raster, zBuffer, camera);
 		}
 		if (true){
 			Vec3 p0 = new Vec3(bounds.maxX, bounds.maxY, bounds.maxZ);
@@ -143,20 +139,20 @@ public class BVH {
 			Vec3 p6 = new Vec3(bounds.minX, bounds.minY, bounds.maxZ);
 			Vec3 p7 = new Vec3(bounds.minX, bounds.minY, bounds.minZ);
 			// top face
-			Ray.render(p0, p1, raster, focalLength, cx, cy, zBuffer, cam);
-			Ray.render(p1, p3, raster, focalLength, cx, cy, zBuffer, cam);
-			Ray.render(p3, p2, raster, focalLength, cx, cy, zBuffer, cam);
-			Ray.render(p2, p0, raster, focalLength, cx, cy, zBuffer, cam);
+			Ray.render(p0, p1, raster, zBuffer, camera);
+			Ray.render(p1, p3, raster, zBuffer, camera);
+			Ray.render(p3, p2, raster, zBuffer, camera);
+			Ray.render(p2, p0, raster, zBuffer, camera);
 			// bottom face
-			Ray.render(p4, p5, raster, focalLength, cx, cy, zBuffer, cam);
-			Ray.render(p5, p7, raster, focalLength, cx, cy, zBuffer, cam);
-			Ray.render(p7, p6, raster, focalLength, cx, cy, zBuffer, cam);
-			Ray.render(p6, p4, raster, focalLength, cx, cy, zBuffer, cam);
+			Ray.render(p4, p5, raster, zBuffer, camera);
+			Ray.render(p5, p7, raster, zBuffer, camera);
+			Ray.render(p7, p6, raster, zBuffer, camera);
+			Ray.render(p6, p4, raster, zBuffer, camera);
 			// sides
-			Ray.render(p0, p4, raster, focalLength, cx, cy, zBuffer, cam);
-			Ray.render(p1, p5, raster, focalLength, cx, cy, zBuffer, cam);
-			Ray.render(p2, p6, raster, focalLength, cx, cy, zBuffer, cam);
-			Ray.render(p3, p7, raster, focalLength, cx, cy, zBuffer, cam);
+			Ray.render(p0, p4, raster, zBuffer, camera);
+			Ray.render(p1, p5, raster, zBuffer, camera);
+			Ray.render(p2, p6, raster, zBuffer, camera);
+			Ray.render(p3, p7, raster, zBuffer, camera);
 		}
 	}
 }

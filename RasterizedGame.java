@@ -8,30 +8,23 @@ import java.util.Arrays;
 
 public class RasterizedGame extends Game{
 
-	private final double focalLength;
-
 	private final double[][] zBuffer;
 
 	public final double speed = .02;
 	public final double rotSpeed = .03;
 
-	private final Transform cam;
+	private final Viewport camera;
 
 	private final Environment env;
 	
-	int cx = width / 2;
-	int cy = height / 2;
 
-	public RasterizedGame(int width, int height, double fov, Environment env){
-		super(width, height);
+	public RasterizedGame(Viewport camera, Environment env){
+		super(camera.screenWidth, camera.screenHeight);
 		
 		this.env = env;
 		
-		cam = new Transform();
-		cam.translateAbsolute(cam.getForwardVector().mul(-1));
+		this.camera = camera;
 
-		
-		this.focalLength = (double) height / (2 * Math.tan(fov/2));
 		zBuffer = new double[width][height];
 	}
 
@@ -43,29 +36,24 @@ public class RasterizedGame extends Game{
 	@Override
 	public void tick(double dt){
 		long start = System.nanoTime();
+		double relativeSpeed = this.speed * dt/16.0;
+		double relativeRotSpeed = this.rotSpeed * dt/16.0;
 
-		if (input.keys['W']) 				cam.translate(0, 0, speed);
-		if (input.keys['A']) 				cam.translate(-speed, 0, 0);
-		if (input.keys['S']) 				cam.translate(0, 0, -speed);
-		if (input.keys['D']) 				cam.translate(speed, 0, 0);
-		if (input.keys[' ']) 				cam.translate(0, speed, 0);
-		if (input.keys[Input.SHIFT]) 		cam.translate(0, -speed, 0);
-	
-		if (input.keys[Input.UP_ARROW]) 	cam.rotateX( rotSpeed);
-		if (input.keys[Input.DOWN_ARROW]) 	cam.rotateX(-rotSpeed);
-		if (input.keys[Input.LEFT_ARROW]) 	cam.rotateY( rotSpeed);
-		if (input.keys[Input.RIGHT_ARROW]) 	cam.rotateY(-rotSpeed);
-		if (input.keys['Q']) 				cam.rotateZ(-rotSpeed);
-		if (input.keys['E']) 				cam.rotateZ( rotSpeed);
+		if (input.keys['W']) 			{camera.translateZ( relativeSpeed);}
+		if (input.keys['A']) 			{camera.translateX(-relativeSpeed);}
+		if (input.keys['S']) 			{camera.translateZ(-relativeSpeed);}
+		if (input.keys['D']) 			{camera.translateX( relativeSpeed);}
+		if (input.keys[' ']) 			{camera.translateY( relativeSpeed);}
+		if (input.keys[Input.SHIFT]) 	{camera.translateY(-relativeSpeed);}
+
+		if (input.keys[Input.UP_ARROW]) 	{camera.rotateX( relativeRotSpeed);}
+		if (input.keys[Input.DOWN_ARROW]) 	{camera.rotateX(-relativeRotSpeed);}
+		if (input.keys[Input.LEFT_ARROW]) 	{camera.rotateY( relativeRotSpeed);}
+		if (input.keys[Input.RIGHT_ARROW]) 	{camera.rotateY(-relativeRotSpeed);}
+		if (input.keys['Q']) 				{camera.rotateZ(-relativeRotSpeed);}
+		if (input.keys['E']) 				{camera.rotateZ( relativeRotSpeed);}
 
 		logicTime = System.nanoTime()-start;
-	}
-
-	public double getX(double x, double y, double z) {
-		return focalLength * (x / z);
-	}
-	public double getY(double x, double y, double z) {
-		return focalLength * (y / z);
 	}
 
 	private void clearZBuffer() {
@@ -83,16 +71,16 @@ public class RasterizedGame extends Game{
 
 		
 		for (PhysicalObject physicalObjects : env.physicalObjects){
-			physicalObjects.render(raster, focalLength, cx, cy, zBuffer, cam);
+			physicalObjects.render(raster, zBuffer, camera);
 		}
-		new Point(new Vec3(0, 0, 0), 1).render(raster, focalLength, cx, cy, zBuffer, cam);
+		new Point(new Vec3(0, 0, 0), 1).render(raster, zBuffer, camera);
 		Graphics2D g2d = image.createGraphics();
 		long renderTime = System.nanoTime()-renderStart;
 		g2d.drawString("Render (ms):"+renderTime/1_000_000.0,0,20);
 		g2d.drawString("Logic  (ms):"+logicTime/1_000_000.0,0,40);
 	
 		g2d.drawString(Math.random()+"", 0, 100);
-		g2d.drawString("Cam Pos:"+cam.translation.toString(), 0, 60);
-		g2d.drawString("Cam Rot:"+cam.rot.toString(), 0, 80);
+		g2d.drawString("Cam Pos:"+camera.transform.translation.toString(), 0, 60);
+		g2d.drawString("Cam Rot:"+camera.transform.rot.toString(), 0, 80);
 	}
 }
