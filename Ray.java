@@ -7,11 +7,8 @@ import java.util.Random;
 
 public final class Ray {
 	private Ray(){}
-	public final static PhysicalObject sun = new Sphere(null, 0, Material.LIGHT);
-	public final static Vec3 sunVec = new Vec3(1, 1, 0).normalize();
 	private final static PhysicalObject err = new Sphere(null, 0, new Material(1, Color.GREEN, Color.BLACK, 0, 0, 0));
 	public static double[] trace(Vec3 origin, Vec3 direction, Environment env, int maxDepth, Random random){
-		final double EPSILON = 1e-8;
 		double[] rayColor = {1.0, 1.0, 1.0};
 		double[] incomingLight = {0.0, 0.0, 0.0};
 		
@@ -29,8 +26,8 @@ public final class Ray {
 
 			// background light
 			if (intersection == null) {
-				if (direction.dist(sunVec) < .75){
-					intersection = new Intersection(Vec3.ZERO_VEC, sun, Vec3.ZERO_VEC);
+				if (direction.dist(env.sunVec) < .75){
+					intersection = new Intersection(Vec3.ZERO_VEC, env.sun, Vec3.ZERO_VEC);
 				} else {
 					break;
 				}
@@ -43,13 +40,11 @@ public final class Ray {
 			
 			// find next ray
 			Vec3 nextDirection;
-			boolean applyColor = true;
+			boolean specularReflection = random.nextDouble() < object.specularityChance;
 			if (object.transparency == 0){
-				Vec3 diffuseDirection = new Vec3(random.nextDouble() - .5, random.nextDouble() - .5, random.nextDouble() - .5);
-				if (diffuseDirection.dot(intersection.normal) < 0) diffuseDirection = diffuseDirection.mul(-1);
+				Vec3 diffuseDirection = intersection.normal.add(Vec3.random(random)).normalize();
 				
-				if (random.nextDouble() < object.specularityChance){
-					applyColor = false;
+				if (specularReflection){
 					Vec3 specularDirection = direction.sub(intersection.normal.mul(2 * direction.dot(intersection.normal))).normalize();
 					nextDirection = lerp(diffuseDirection, specularDirection, object.specularity).normalize();
 				} else {
@@ -61,27 +56,24 @@ public final class Ray {
 			origin = intersection.pos;
 			direction = nextDirection;
 
-			double strength = intersection.normal.dot(direction);
 			
 			//calculate colors
 			// emissionStrengh * emissionColor = emitted light, multiply with ray color to get the intersection of the colors
-			if (applyColor){
+			if (!specularReflection){
 				incomingLight[0] += (object.emissionStrength * object.emissionColor[0]) * rayColor[0];
 				incomingLight[1] += (object.emissionStrength * object.emissionColor[1]) * rayColor[1];
 				incomingLight[2] += (object.emissionStrength * object.emissionColor[2]) * rayColor[2];
 				
-				rayColor[0] *= object.reflectionColor[0] * strength * 2;
-				rayColor[1] *= object.reflectionColor[1] * strength * 2;
-				rayColor[2] *= object.reflectionColor[2] * strength * 2;
+				rayColor[0] *= object.reflectionColor[0];
+				rayColor[1] *= object.reflectionColor[1];
+				rayColor[2] *= object.reflectionColor[2];
 			}
 
 			if (rayColor[0] < .01 && rayColor[1] < .01 && rayColor[2] < .01){
 				break;
 			}
 		}
-	//	incomingLight[0] = Math.min(.9, incomingLight[0]);
-	//	incomingLight[1] = Math.min(.9, incomingLight[1]);
-	//	incomingLight[2] = Math.min(.9, incomingLight[2]);
+
 		return incomingLight;
 	}
 
@@ -131,6 +123,7 @@ public final class Ray {
 			255,
 			255
 		};
+		
 		for (double x = x1, y = y1; x < x2; x+=dx, y+=dy){
 			if (x < 0 || (int)x >= width || y < 0 || (int)y >= height){
 				break;

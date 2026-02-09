@@ -12,3 +12,4 @@ has
   - a rasterizer built in so you can move around at a reasonable framerate while setting up the camera
   - \[ and \] to toggle pathtracing
   - k to save it to a png named saved.png
+  - automatic file compacting of meshes to remove texture and normal stuff cuz i don't use them

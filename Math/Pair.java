@@ -16,11 +16,7 @@ public class Pair<T0, T1>{
 	@Override
 	public boolean equals(Object o){
 		if (o == this) return true;
-		if (o instanceof Pair p){
-			return Objects.equals(p.t0, t0) && Objects.equals(p.t1, t1);
-		} else {
-			return false;
-		}
+		return (o instanceof Pair p && Objects.equals(p.t0, t0) && Objects.equals(p.t1, t1));
 	}
 	@Override
 	public String toString(){

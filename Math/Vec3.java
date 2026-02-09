@@ -1,5 +1,7 @@
 package Math;
 
+import java.util.Random;
+
 public class Vec3{
 	public final double x, y, z;
 	public static final Vec3 ZERO_VEC = new Vec3(0, 0, 0);
@@ -56,6 +58,10 @@ public class Vec3{
 			z * v.x - x * v.z,
 			x * v.y - y * v.x
 		);
+	}
+
+	public static Vec3 random(Random random){
+		return new Vec3(random.nextDouble() - .5, random.nextDouble() - .5, random.nextDouble() - .5).normalize();
 	}
 
 	@Override

@@ -15,15 +15,19 @@ public class Viewport {
 	public final int screenHeight;
 	public final int cx;
 	public final int cy;
-	public Viewport(double fov, int size){
-		this(fov, 0, 0, size, size);
+
+	public Viewport(double fov, int screenWidth, int screenHeight){
+		this(fov, 0, 0, screenWidth, screenHeight);
 	}
 	public Viewport(double fov, double focusDistance, double focus, int screenWidth, int screenHeight){
-		this.fov = fov;
+		this.fov = Math.max(Math.min(fov, Math.PI), 0.0);
+		this.focalLength = (double) screenWidth / (2 * Math.tan(this.fov/2));
+
 		this.focusDistance = focusDistance;
 		this.focus = focus;
-		this.focalLength = (double) screenWidth / (2 * Math.tan(fov/2));
+
 		this.transform = new Transform();
+		
 		this.screenWidth = screenWidth;
 		this.screenHeight = screenHeight;
 		this.cx = screenWidth/2;

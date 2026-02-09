@@ -103,9 +103,6 @@ public class PathTracedGame extends Game{
 		}
 		for (PhysicalObject object : env.physicalObjects){
 			if (object instanceof Mesh mesh){
-				for (Triangle tri : mesh.triangles){
-					//Ray.render(tri.center(), tri.center().add(tri.normal), raster, focalLength, cx, cy, zBuffer, cam);
-				}
 				mesh.bvh.render(raster, zBuffer, camera);
 			}
 		}
@@ -174,13 +171,15 @@ public class PathTracedGame extends Game{
 				Pixel pixel = pixelBuffer[y][x];
 				int[] color = new int[3];
 				for (int i = 0; i < samples; i++){
-					double[] col = Ray.trace(origin, vector, env, 5, random);
+					double[] col = Ray.trace(origin, vector, env, 10, random);
 					color[0] += (int) (255.0 * col[0]);
 					color[1] += (int) (255.0 * col[1]);
 					color[2] += (int) (255.0 * col[2]);
 				}
 
 				pixel.addSample(color, samples);
+				color = pixel.getColor();
+				// if (color[0] > 255 || color[1] > 255 || color[2] > 255 || color[0] < 0 || color[1] < 0 || color[2] < 0) System.out.println("bad");
 				raster.setPixel(x, y, pixel.getColor());
 			}
 		}
