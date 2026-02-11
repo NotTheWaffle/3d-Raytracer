@@ -15,11 +15,11 @@ public class Pixel {
 		this.bColor = (int) (255 * color[2]);
 		this.samples = weight;
 	}
-	public void addSample(int[] color, int weight){
+	public synchronized void addSample(int[] color){
 		this.rColor += color[0];
 		this.gColor += color[1];
 		this.bColor += color[2];
-		this.samples+=weight;
+		this.samples++;
 	}
 	public int[] getColor(){
 		if (samples == 0) return new int[] {0, 0, 0, 255};

@@ -17,7 +17,7 @@ public class PixelSTDEV extends Pixel{
 		super(color, weight);
 	}
 	public void addSample(int[] color, int weight){
-		super.addSample(color, weight);
+		super.addSample(color);
 
 		n++;
 		double rDelta1 = color[0] - rMean;

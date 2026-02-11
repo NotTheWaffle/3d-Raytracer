@@ -72,7 +72,7 @@ public class PathTracedGame extends Game{
 		if (input.keys['Q']) 				{resetPixelBuffer(); camera.rotateZ(-relativeRotSpeed);}
 		if (input.keys['E']) 				{resetPixelBuffer(); camera.rotateZ( relativeRotSpeed);}
 
-		if (input.keys['['] && !raytrace) {raytrace = true; resetPixelBuffer(); beginPathtracing(36);}
+		if (input.keys['['] && !raytrace) 	{raytrace = true; resetPixelBuffer(); beginPathtracing(25);}
 		if (input.keys[']'] && raytrace) 	{raytrace = false; stopPathtracing();}
 
 		logicTime = System.nanoTime()-start;
@@ -107,29 +107,6 @@ public class PathTracedGame extends Game{
 		return image;
 	}
 
-	private BufferedImage renderRaytraced(int threadCount, int samples){
-		WritableRaster raster = nextFrame.getRaster();
-		int threadSqrt = (int)Math.sqrt(threadCount);
-		List<Thread> threads = new ArrayList<>();
-		for (int x = 0; x < threadSqrt; x++){
-			for (int y = 0; y < threadSqrt; y++){
-				final int x_f = x;
-				final int y_f = y;
-				Thread t = new Thread(() -> {
-					raytraceRange(width*x_f/threadSqrt, height*y_f/threadSqrt, width*(x_f+1)/threadSqrt, height*(y_f+1)/threadSqrt, raster, samples);
-				});
-				t.start();
-				threads.add(t);
-			}
-		}
-		try {
-			for (Thread t : threads){
-				t.join();
-			}
-		} catch (InterruptedException e){}
-		return nextFrame;
-	}
-
 	@Override
 	public void generateFrame(){
 	//	long renderStart = System.nanoTime();
@@ -140,16 +117,10 @@ public class PathTracedGame extends Game{
 			} catch (IOException e) {}
 		}
 		if (raytrace){
-			nextFrame = renderPathtraced();//renderRaytraced(64, 4);
+			nextFrame = renderPathtraced();
 		} else {
 			nextFrame = renderRasterized();
 		}
-		
-	//	Graphics2D g2d = nextFrame.createGraphics();
-	//	long renderTime = System.nanoTime() - renderStart;
-	//	g2d.setColor(Color.WHITE);
-	//	g2d.drawString("Render (ms):"+renderTime/1_000_000.0,0,20);
-	//	g2d.drawString("Samples: "+pixelBuffer[0][0].samples, 0, 40);
 	}
 
 	private BufferedImage renderPathtraced(){
@@ -163,7 +134,6 @@ public class PathTracedGame extends Game{
 	}
 	private void beginPathtracing(int threadCount){
 		stopPathtracing();
-		threads.clear();
 		int partitions = (int) Math.sqrt(threadCount);
 		for (int x = 0; x < partitions; x++){
 			for (int y = 0; y < partitions; y++){
@@ -178,14 +148,14 @@ public class PathTracedGame extends Game{
 				threads.add(t);
 			}
 		}
-		System.out.println("Started "+threads.size()+" threads");
+
 		threads.forEach(t -> t.start());
+		System.out.println("Started "+threads.size()+" threads");
 	}
 	private void stopPathtracing(){
-		if (threads == null)
-			threads = new ArrayList<>();
-		if (threads.isEmpty())
-			return;
+		if (threads == null) threads = new ArrayList<>();
+		if (threads.isEmpty()) return;
+
 		threads.forEach(t -> t.interrupt());
 		System.out.println("Dispatched "+threads.size()+" threads");
 		threads.clear();
@@ -211,38 +181,8 @@ public class PathTracedGame extends Game{
 						(int) (255.0 * col[0]),
 						(int) (255.0 * col[1]),
 						(int) (255.0 * col[2])
-					},
-					1
+					}
 				);
-			}
-		}
-	}
-	private void raytraceRange(int x1, int y1, int x2, int y2, WritableRaster raster, final int samples){
-		Random random = ThreadLocalRandom.current();
-		Vec3 origin = camera.transform.translation;
-		for (int x = x1; x < x2; x += 1){
-			for (int y = y1; y < y2; y += 1){
-				Vec3 vector;
-				if (camera.focus == 0){
-					vector = camera.transform.rot.transform((new Vec3(x-camera.cx, camera.cy-y, camera.focalLength)).normalize());
-				} else {
-					origin = camera.transform.translation.add(new Vec3((random.nextDouble()-.5)*camera.focus, (random.nextDouble()-.5)*camera.focus, (random.nextDouble()-.5)*camera.focus));
-					Vec3 pixelPoint = camera.transform.translation.add(camera.transform.rot.transform(new Vec3(x-camera.cx, camera.cy-y, camera.focalLength).mul(camera.focusDistance/camera.focalLength)));
-					vector = pixelPoint.sub(origin).normalize();
-				}
-				
-				Pixel pixel = pixelBuffer[y][x];
-				int[] color = new int[3];
-				
-				for (int i = 0; i < samples; i++){
-					double[] col = Ray.trace(origin, vector, env, 10, random);
-					color[0] += (int) (255.0 * col[0]);
-					color[1] += (int) (255.0 * col[1]);
-					color[2] += (int) (255.0 * col[2]);
-				}
-
-				pixel.addSample(color, samples);
-				raster.setPixel(x, y, pixel.getColor());
 			}
 		}
 	}
