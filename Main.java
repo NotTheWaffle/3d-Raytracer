@@ -5,7 +5,7 @@ import Game.Window;
 
 public class Main {
 	public static void main(String[] args){
-		String model = "Models/"+"donut"+".obj";
+		String model = "Models/"+"dragon1mil"+".obj";
 		int size = 512;
 		
 		Environment env = new Environment();
@@ -14,7 +14,7 @@ public class Main {
 		env.addSphereTest();
 		env.addStanfordBox(2, 2.1);
 		
-		runGame(new PathTracedGame(new Viewport(Math.PI*.5, size, size), env));
+		runGame(new PathTracedGame(new Viewport(Math.PI*.5, 1920, 1200), env));
 	}
 	public static Thread runGame(final Game game){
 		Thread t1 = new Thread(

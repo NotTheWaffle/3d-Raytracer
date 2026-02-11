@@ -1,8 +1,6 @@
 import Game.Game;
 import Game.Input;
 import Math.*;
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
@@ -27,6 +25,8 @@ public class PathTracedGame extends Game{
 
 	public boolean raytrace = false;
 	public final Pixel[][] pixelBuffer;
+
+	public List<Thread> threads;
 	
 	public static long logicTime;
 
@@ -72,16 +72,10 @@ public class PathTracedGame extends Game{
 		if (input.keys['Q']) 				{resetPixelBuffer(); camera.rotateZ(-relativeRotSpeed);}
 		if (input.keys['E']) 				{resetPixelBuffer(); camera.rotateZ( relativeRotSpeed);}
 
-		if (input.keys['[']) 	{raytrace = true; resetPixelBuffer();}
-		if (input.keys[']']) 	raytrace = false;
+		if (input.keys['['] && !raytrace) {raytrace = true; resetPixelBuffer(); beginPathtracing(36);}
+		if (input.keys[']'] && raytrace) 	{raytrace = false; stopPathtracing();}
 
 		logicTime = System.nanoTime()-start;
-	}
-
-	private void clearZBuffer() {
-		for (int x = 0; x < width; x++) {
-			Arrays.fill(zBuffer[x], Double.POSITIVE_INFINITY);
-		}
 	}
 
 	private void resetPixelBuffer(){
@@ -93,10 +87,14 @@ public class PathTracedGame extends Game{
 		}
 	}
 
+	
+
 	private BufferedImage renderRasterized(){
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		WritableRaster raster = image.getRaster();
-		clearZBuffer();
+		for (int x = 0; x < width; x++) {
+			Arrays.fill(zBuffer[x], Double.POSITIVE_INFINITY);
+		}
 		
 		for (PhysicalObject object : env.physicalObjects){
 			object.render(raster, zBuffer, camera);
@@ -131,9 +129,10 @@ public class PathTracedGame extends Game{
 		} catch (InterruptedException e){}
 		return nextFrame;
 	}
+
 	@Override
 	public void generateFrame(){
-		long renderStart = System.nanoTime();
+	//	long renderStart = System.nanoTime();
 		if (input.keys['K'] && nextFrame != null){
 			try {
 				File outputfile = new File("saved.png");
@@ -141,21 +140,84 @@ public class PathTracedGame extends Game{
 			} catch (IOException e) {}
 		}
 		if (raytrace){
-			nextFrame = renderRaytraced(25, 4);
+			nextFrame = renderPathtraced();//renderRaytraced(64, 4);
 		} else {
 			nextFrame = renderRasterized();
 		}
 		
-		Graphics2D g2d = nextFrame.createGraphics();
-		long renderTime = System.nanoTime() - renderStart;
-		g2d.setColor(Color.WHITE);
-		g2d.drawString("Render (ms):"+renderTime/1_000_000.0,0,20);
-		g2d.drawString("Samples: "+pixelBuffer[0][0].samples, 0, 40);
-		g2d.drawString(camera.transform.toString(), 0, 60);
+	//	Graphics2D g2d = nextFrame.createGraphics();
+	//	long renderTime = System.nanoTime() - renderStart;
+	//	g2d.setColor(Color.WHITE);
+	//	g2d.drawString("Render (ms):"+renderTime/1_000_000.0,0,20);
+	//	g2d.drawString("Samples: "+pixelBuffer[0][0].samples, 0, 40);
 	}
-	
+
+	private BufferedImage renderPathtraced(){
+		WritableRaster raster = nextFrame.getRaster();
+		for (int y = 0; y < pixelBuffer.length; y++){
+			for (int x = 0; x < pixelBuffer[y].length; x++){
+				raster.setPixel(x, y, pixelBuffer[y][x].getColor());
+			}
+		}
+		return nextFrame;
+	}
+	private void beginPathtracing(int threadCount){
+		stopPathtracing();
+		threads.clear();
+		int partitions = (int) Math.sqrt(threadCount);
+		for (int x = 0; x < partitions; x++){
+			for (int y = 0; y < partitions; y++){
+				final int x_f = x;
+				final int y_f = y;
+				Thread t = new Thread(() -> {
+					Random random = ThreadLocalRandom.current();
+					while (!Thread.currentThread().isInterrupted()){
+						pathtrace(x_f, y_f, camera.screenWidth, camera.screenHeight, partitions, partitions, random);
+					}
+				});
+				threads.add(t);
+			}
+		}
+		System.out.println("Started "+threads.size()+" threads");
+		threads.forEach(t -> t.start());
+	}
+	private void stopPathtracing(){
+		if (threads == null)
+			threads = new ArrayList<>();
+		if (threads.isEmpty())
+			return;
+		threads.forEach(t -> t.interrupt());
+		System.out.println("Dispatched "+threads.size()+" threads");
+		threads.clear();
+	}
+
+	private void pathtrace(int x1, int y1, int x2, int y2, int dx, int dy, Random random){
+		Vec3 origin = camera.transform.translation;
+		for (int x = x1; x < x2; x += dx){
+			for (int y = y1; y < y2; y += dy){
+				Vec3 vector;
+				if (camera.focus == 0){
+					vector = camera.transform.rot.transform((new Vec3(x-camera.cx, camera.cy-y, camera.focalLength)).normalize());
+				} else {
+					origin = camera.transform.translation.add(new Vec3((random.nextDouble()-.5)*camera.focus, (random.nextDouble()-.5)*camera.focus, (random.nextDouble()-.5)*camera.focus));
+					Vec3 pixelPoint = camera.transform.translation.add(camera.transform.rot.transform(new Vec3(x-camera.cx, camera.cy-y, camera.focalLength).mul(camera.focusDistance/camera.focalLength)));
+					vector = pixelPoint.sub(origin).normalize();
+				}
+				
+				double[] col = Ray.trace(origin, vector, env, 10, random);
+				
+				pixelBuffer[y][x].addSample(
+					new int[] {
+						(int) (255.0 * col[0]),
+						(int) (255.0 * col[1]),
+						(int) (255.0 * col[2])
+					},
+					1
+				);
+			}
+		}
+	}
 	private void raytraceRange(int x1, int y1, int x2, int y2, WritableRaster raster, final int samples){
-		final double EPSILON = 1e-8;
 		Random random = ThreadLocalRandom.current();
 		Vec3 origin = camera.transform.translation;
 		for (int x = x1; x < x2; x += 1){

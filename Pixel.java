@@ -25,7 +25,7 @@ public class Pixel {
 		if (samples == 0) return new int[] {0, 0, 0, 255};
 		return new int[] {rColor/samples, gColor/samples, bColor/samples, 255};
 	}
-	public void clear(){
+	public synchronized void clear(){
 		rColor = gColor = bColor = 0;
 		samples = 0;
 	}
