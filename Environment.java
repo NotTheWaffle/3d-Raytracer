@@ -17,11 +17,11 @@ public class Environment{
 		this();
 		physicalObjects.addAll(Arrays.asList(mesh));
 	}
-	public void addStanfordBox(double innerWidth, double outerWidth){
+	public void addCornellBox(double innerWidth, double outerWidth){
 		//bottom
-		add(new RectangularPrism(-outerWidth/2, outerWidth/2, -outerWidth/2, -innerWidth/2, -outerWidth/2, outerWidth/2, Material.solid(Color.RED)));
+		add(new RectangularPrism(-outerWidth/2, outerWidth/2, -outerWidth/2, -innerWidth/2, -outerWidth/2, outerWidth/2, Material.solid(Color.white)));
 		//left
-		add(new RectangularPrism(-outerWidth/2, -innerWidth/2, -innerWidth/2, innerWidth/2, -outerWidth/2, innerWidth/2, Material.solid(Color.BLUE)));
+		add(new RectangularPrism(-outerWidth/2, -innerWidth/2, -innerWidth/2, innerWidth/2, -outerWidth/2, innerWidth/2, Material.solid(Color.RED)));
 		//right
 		add(new RectangularPrism(innerWidth/2, outerWidth/2, -innerWidth/2, innerWidth/2, -outerWidth/2, innerWidth/2, Material.solid(Color.GREEN)));
 		//back
