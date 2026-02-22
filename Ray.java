@@ -6,27 +6,27 @@ import java.awt.image.WritableRaster;
 import java.util.Random;
 
 public final class Ray {
+	public final static double EPSILON = PhysicalObject.EPSILON;
 	private Ray(){}
-	private final static PhysicalObject err = new Sphere(null, 0, Material.light(Color.GREEN));
-	public static double[] trace(Vec3 origin, Vec3 direction, Environment env, int maxDepth, Random random){
+	private final static Material err = Material.light(Color.GREEN);
+	public static double[] trace(Vec3 rayOrigin, Vec3 rayDirection, Environment env, int maxDepth, Random random){
 		double[] rayColor = {1.0, 1.0, 1.0};
 		double[] incomingLight = {0.0, 0.0, 0.0};
 		
 		for (int i = 0; i < maxDepth; i++){
-			// find intersection
+			// find nearest intersection
 			Intersection intersection = null;
 			for (PhysicalObject p : env.physicalObjects){
-				Intersection localIntersection = p.getIntersection(origin, direction);
-				if (localIntersection == null || (intersection != null && origin.dist(intersection.pos) < origin.dist(localIntersection.pos))) continue;
-				if (localIntersection.normal.dot(direction) > 0){
-					localIntersection = new Intersection(localIntersection.pos, err, localIntersection.normal, false);
+				Intersection localIntersection = p.getIntersection(rayOrigin, rayDirection);
+				if (localIntersection == null) continue;
+				if (intersection == null || rayOrigin.dist(intersection.pos) > rayOrigin.dist(localIntersection.pos)){
+					intersection = localIntersection;
 				}
-				intersection = localIntersection;
 			}
 
 			// background light
 			if (intersection == null) {
-				if (direction.dist(env.sunVec) < .75){
+				if (rayDirection.dist(env.sunVec) < .75){
 					intersection = new Intersection(Vec3.ZERO_VEC, env.sun, Vec3.ZERO_VEC, false);
 				} else {
 					break;
@@ -34,46 +34,84 @@ public final class Ray {
 			}
 			
 			
-			PhysicalObject object = intersection.object;
+			Material material = intersection.material;
 
-			
-			
+
 			// find next ray
 			Vec3 nextDirection;
-			boolean specularReflection = random.nextDouble() < object.specularityChance;
-			if (object.transparency == 0){
+			boolean specularReflection = random.nextDouble() < material.specularityChance;
+			if (random.nextDouble() < 1-material.transparency){
 				Vec3 diffuseDirection = intersection.normal.add(Vec3.random(random)).normalize();
 				
 				if (specularReflection){
-					Vec3 specularDirection = direction.sub(intersection.normal.mul(2 * direction.dot(intersection.normal))).normalize();
-					nextDirection = lerp(diffuseDirection, specularDirection, object.specularity).normalize();
+					Vec3 specularDirection = rayDirection.sub(intersection.normal.mul(2 * rayDirection.dot(intersection.normal))).normalize();
+					nextDirection = lerp(diffuseDirection, specularDirection, material.specularity).normalize();
 				} else {
 					nextDirection = diffuseDirection.normalize();
 				}
 			} else {
-				nextDirection = direction;
+				// took this from sebastian lague cuz im stupid at physics
+				Vec3 I = rayDirection.normalize();
+				Vec3 N = intersection.normal.normalize();
+
+				double iorA = 1;
+				double iorB = material.refractiveIndex;
+
+				double d = I.dot(N);
+
+				if (d > 0) {
+					N = N.mul(-1);
+					double temp = iorA;
+					iorA = iorB;
+					iorB = temp;
+				}
+
+				double cosI = -I.dot(N);
+				double eta = iorA/iorB;
+
+				double sinT2 = eta * eta * (1 - cosI * cosI);
+				
+				Vec3 reflect = I.sub(N.mul(2 * I.dot(N))).normalize();
+				Vec3 refract = null;
+				double reflectance;
+
+				if (sinT2 > 1){
+					reflectance = 1;
+				} else {
+					double cosT = Math.sqrt(Math.max(0.0, 1.0 - sinT2));
+					refract = I.mul(eta).add(N.mul(eta * cosI - cosT)).normalize();
+			
+					double r0 = (iorA - iorB) / (iorA + iorB);
+					r0 *= r0;
+					reflectance = r0 + (1 - r0) * Math.pow(1 - cosI, 5);
+				}
+				if (random.nextDouble() < reflectance){
+				//	System.out.println(reflectance);
+					nextDirection = reflect;
+				} else {
+					nextDirection = refract;
+				}
 			}
-			origin = intersection.pos;
-			direction = nextDirection;
+			rayOrigin = intersection.pos;
+			rayDirection = nextDirection;
 
 			
 			//calculate colors
 			// emissionStrengh * emissionColor = emitted light, multiply with ray color to get the intersection of the colors
 			if (!specularReflection){
-				incomingLight[0] += (object.emissionStrength * object.emissionColor[0]) * rayColor[0];
-				incomingLight[1] += (object.emissionStrength * object.emissionColor[1]) * rayColor[1];
-				incomingLight[2] += (object.emissionStrength * object.emissionColor[2]) * rayColor[2];
+				incomingLight[0] += (material.emissionStrength * material.emissionColor[0]) * rayColor[0];
+				incomingLight[1] += (material.emissionStrength * material.emissionColor[1]) * rayColor[1];
+				incomingLight[2] += (material.emissionStrength * material.emissionColor[2]) * rayColor[2];
 				
-				rayColor[0] *= object.reflectionColor[0];
-				rayColor[1] *= object.reflectionColor[1];
-				rayColor[2] *= object.reflectionColor[2];
+				rayColor[0] *= material.reflectionColor[0];
+				rayColor[1] *= material.reflectionColor[1];
+				rayColor[2] *= material.reflectionColor[2];
 			}
 
 			if (rayColor[0] < .01 && rayColor[1] < .01 && rayColor[2] < .01){
 				break;
 			}
 		}
-
 		return incomingLight;
 	}
 

@@ -107,11 +107,11 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 		}
 		
 		for (PhysicalObject object : env.physicalObjects){
-			object.render(raster, zBuffer, camera);
+			object.renderRasterized(raster, zBuffer, camera);
 		}
 		for (PhysicalObject object : env.physicalObjects){
 			if (object instanceof Mesh mesh){
-				mesh.bvh.render(raster, zBuffer, camera);
+				mesh.bvh.renderWireframe(raster, zBuffer, camera);
 			}
 		}
 		return image;

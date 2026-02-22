@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Environment{
 	
-	public final PhysicalObject sun;
+	public final Material sun;
 	public final Vec3 sunVec;
 	public final List<PhysicalObject> physicalObjects;
 	public Environment(){
@@ -15,12 +15,13 @@ public class Environment{
 	public Environment(boolean sun){
 		physicalObjects = new ArrayList<>();
 		if (sun){
-			this.sun = new Sphere(null, 0, Material.LIGHT);
+			this.sun = Material.LIGHT;
 			this.sunVec = new Vec3(0, 1, 1).normalize();
 		} else {
-			this.sun = new Sphere(null, 0, Material.solid(Color.BLACK));
+			this.sun = Material.solid(Color.BLACK);
 			this.sunVec = new Vec3(0, 0, 0);
 		}
+		checkEnvironment();
 	}
 	public void addCornellBox(double innerWidth, double outerWidth){
 		//bottom
@@ -50,5 +51,26 @@ public class Environment{
 	}
 	public void add(PhysicalObject object){
 		physicalObjects.add(object);
+		checkEnvironment();
+	}
+	private boolean checkEnvironment(){
+		if (sun.emissionStrength == 1){
+			double[] color = sun.emissionColor;
+			if (color[0] > 0 || color[1] > 0 || color[2] > 0) {
+				System.out.println("Scene is illuminated");
+				return true;
+			}
+		}
+		for (PhysicalObject object : physicalObjects){
+			if (object.material.emissionStrength == 1){
+				double[] color = object.material.emissionColor;
+				if (color[0] > 0 || color[1] > 0 || color[2] > 0) {
+					System.out.println("Scene is illuminated");
+					return true;
+				}
+			}
+		}
+		System.out.println("No illuminative objects found");
+		return false;
 	}
 }

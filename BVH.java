@@ -120,13 +120,13 @@ public class BVH {
 	public double testIntersection(Vec3 origin, Vec3 direction){
 		return bounds.testIntersection(origin, direction.normalize());
 	}
-	public void render(WritableRaster raster, double[][] zBuffer, Viewport camera) {
+	public void renderWireframe(WritableRaster raster, double[][] zBuffer, Viewport camera) {
 		if (null == null) return;
 		if (node0 != null) {
-			node0.render(raster, zBuffer, camera);
+			node0.renderWireframe(raster, zBuffer, camera);
 		}
 		if (node1 != null) {
-			node1.render(raster, zBuffer, camera);
+			node1.renderWireframe(raster, zBuffer, camera);
 		}
 		if (true){
 			Vec3 p0 = new Vec3(bounds.maxX, bounds.maxY, bounds.maxZ);

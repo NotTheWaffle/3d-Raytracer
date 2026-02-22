@@ -27,7 +27,7 @@ public class Material {
 
 	private Material(double emissionStrength, Color emissionColor, Color reflectionColor, double specularity, double specularityChance, double transparency, double refractiveIndex){
 		this.emissionStrength = emissionStrength;
-		this.emissionColor =new double[] {emissionColor.getRed()/255.0, emissionColor.getGreen()/255.0, emissionColor.getBlue()/255.0};
+		this.emissionColor = new double[] {emissionColor.getRed()/255.0, emissionColor.getGreen()/255.0, emissionColor.getBlue()/255.0};
 		
 		this.reflectionColor = new double[] {reflectionColor.getRed()/255.0, reflectionColor.getGreen()/255.0, reflectionColor.getBlue()/255.0};
 		this.specularity = specularity;

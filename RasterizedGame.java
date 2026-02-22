@@ -71,7 +71,7 @@ public class RasterizedGame extends Game{
 
 		
 		for (PhysicalObject physicalObjects : env.physicalObjects){
-			physicalObjects.render(raster, zBuffer, camera);
+			physicalObjects.renderRasterized(raster, zBuffer, camera);
 		}
 		new Point(new Vec3(0, 0, 0), 1).render(raster, zBuffer, camera);
 		Graphics2D g2d = image.createGraphics();

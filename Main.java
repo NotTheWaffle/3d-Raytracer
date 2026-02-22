@@ -1,24 +1,25 @@
 
 import Game.Game;
 import Game.Window;
+import java.awt.Color;
 
 
 public class Main {
 	public static void main(String[] args){
 		int size = 512;
 		
-		Environment env = new Environment();
-		env.add(MeshLoader.loadObj("Models/"+"dragon1mil"+".obj", new Transform().rotateX(Math.PI/2), 4, Material.SOLID, true));
+		Environment env = new Environment(true);
+	//	env.add(MeshLoader.loadObj("Models/"+"cube"+".obj", new Transform(), 1, Material.GLASS, true));
+		env.add(new RectangularPrism(0, 0, 0, 1, 1, 1, Material.glass(Color.WHITE, 1), 0));
 
-		//env.addSphereTest();
-		//env.addCornellBox(2, 2.1);
-		env.add(new RectangularPrism(0, -1.5, 0, 20, 1, 20, Material.SOLID, 0));
+		env.addSphereTest();
+	//	env.addCornellBox(2, 2.1);
 
-	//	env.add(new Sphere(new Vec3(0, 0, 0), 1, Material.SOLID));
+	//	env.add(new Sphere(new Vec3(0, 0, 0), .5, Material.GLASS));
 
-		env.addHueSpheres(8, 1);
-		Viewport camera = new Viewport(Math.PI*.5, 1, .001, 1920, 1080);
-		camera.rotateX(-Math.PI/2);
+	//	env.addHueSpheres(8, 1);
+		Viewport camera = new Viewport(Math.PI*.5, 1, .001, 512, 512);
+	//	camera.rotateX(-Math.PI/2);
 		
 		runGame(new AsyncVirtualThreadedPathtracedGame(camera, env));
 	}

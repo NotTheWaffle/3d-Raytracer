@@ -20,7 +20,7 @@ public class Mesh extends PhysicalObject{
 		this.bvh = new BVH(triangles);
 	}
 	@Override
-	public void render(WritableRaster raster, double[][] zBuffer, Viewport camera) {
+	public void renderRasterized(WritableRaster raster, double[][] zBuffer, Viewport camera) {
 		for (Triangle tri : triangles){
 			tri.render(raster, zBuffer, camera);
 		}
@@ -29,6 +29,6 @@ public class Mesh extends PhysicalObject{
 	public Intersection getIntersection(Vec3 origin, Vec3 direction){
 		Intersection intersection = bvh.getIntersection(origin, direction);
 		if (intersection == null) return null;
-		return new Intersection(intersection.pos, this, intersection.normal, intersection.backface);
+		return new Intersection(intersection.pos, this.material, intersection.normal, intersection.backface);
 	}
 }

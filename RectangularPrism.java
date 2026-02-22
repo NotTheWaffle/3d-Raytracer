@@ -20,7 +20,6 @@ public final class RectangularPrism extends PhysicalObject{
 	}
 	@Override
 	public Intersection getIntersection(Vec3 origin, Vec3 direction){
-		final double EPSILON = 1e-8;
 		double temp;
 		double txenter = (minX-origin.x)/direction.x;
 		double txexit = (maxX-origin.x)/direction.x;
@@ -68,11 +67,12 @@ public final class RectangularPrism extends PhysicalObject{
 		if (tenter - texit > EPSILON || tenter < 0){
 			return null;
 		}
-		return new Intersection(origin.add(direction.mul(tenter)), this, normal, false);
+		return new Intersection(origin.add(direction.mul(tenter)), this.material, normal, false);
 	}
 	
+	
 	@Override
-	public void render(WritableRaster raster, double[][] zBuffer, Viewport camera) {
+	public void renderRasterized(WritableRaster raster, double[][] zBuffer, Viewport camera) {
 		Vec3 p0 = new Vec3(maxX, maxY, maxZ);
 		Vec3 p1 = new Vec3(maxX, maxY, minZ);
 		Vec3 p2 = new Vec3(maxX, minY, maxZ);

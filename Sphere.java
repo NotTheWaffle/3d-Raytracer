@@ -13,7 +13,7 @@ public class Sphere extends PhysicalObject{
 	}
 
 	@Override
-	public void render(WritableRaster raster, double[][] zBuffer, Viewport camera) {
+	public void renderRasterized(WritableRaster raster, double[][] zBuffer, Viewport camera) {
 		Vec3 p = camera.applyTo(this.point);
 		if (p.z < 0) return;
 		
@@ -29,9 +29,9 @@ public class Sphere extends PhysicalObject{
 		int maxY = Math.min(zBuffer[0].length - 1, screenY+projectedRadius);
 		
 		int[] rgb = {
-			(int) (255 * (this.reflectionColor[0]+emissionColor[0])),
-			(int) (255 * (this.reflectionColor[1]+emissionColor[1])),
-			(int) (255 * (this.reflectionColor[2]+emissionColor[2])),
+			(int) (255 * (material.reflectionColor[0]+material.emissionColor[0])),
+			(int) (255 * (material.reflectionColor[1]+material.emissionColor[1])),
+			(int) (255 * (material.reflectionColor[2]+material.emissionColor[2])),
 			255
 		};
 		
@@ -74,6 +74,6 @@ public class Sphere extends PhysicalObject{
 		Vec3 intersectionPoint = rayOrigin.add(rayVector.mul(t));
 		Vec3 normal = intersectionPoint.sub(point).normalize();
 		
-		return new Intersection(intersectionPoint, this, normal, normal.dot(rayVector) > 0);
+		return new Intersection(intersectionPoint, this.material, normal, normal.dot(rayVector) > 0);
 	}
 }
