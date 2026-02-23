@@ -141,6 +141,7 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 				raster.setPixel(x, y, pixelBuffer[y][x].getColor());
 			}
 		}
+		
 	}
 	private void beginPathtracing(int threadCount){
 		stopPathtracing();
