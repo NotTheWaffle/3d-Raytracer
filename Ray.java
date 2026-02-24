@@ -120,8 +120,10 @@ public final class Ray {
 				break;
 			}
 		}
+
 		return incomingLight;
 	}
+	
 	private static Vec3 getSpecularReflectionVector(Vec3 rayDirection, Vec3 normal){
 		return rayDirection.sub(normal.mul(2 * rayDirection.dot(normal))).normalize();
 	}

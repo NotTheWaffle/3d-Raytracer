@@ -2,9 +2,6 @@
 import Math.Vec3;
 import java.awt.image.WritableRaster;
 
-/**
- * An abstract object which represents the Physical parts of an object
- */
 public abstract class PhysicalObject {
 	public final static double EPSILON = 1e-8;
 	public final Material material;

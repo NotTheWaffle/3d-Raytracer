@@ -2,14 +2,12 @@
 import Math.Vec3;
 
 
-public class Viewport {
+public class Viewport extends Transform {
 	public final double fov;
 	public final double focalLength;
 
 	public final double focusDistance;
 	public final double focus;
-
-	public final Transform transform;
 
 	public final int screenWidth;
 	public final int screenHeight;
@@ -20,21 +18,17 @@ public class Viewport {
 		this(fov, 0, 0, screenWidth, screenHeight);
 	}
 	public Viewport(double fov, double focusDistance, double focus, int screenWidth, int screenHeight){
+		super();
 		this.fov = Math.max(Math.min(fov, Math.PI), 0.0);
 		this.focalLength = (double) screenWidth / (2 * Math.tan(this.fov/2));
 
 		this.focusDistance = focusDistance;
 		this.focus = focus;
-
-		this.transform = new Transform();
 		
 		this.screenWidth = screenWidth;
 		this.screenHeight = screenHeight;
 		this.cx = screenWidth/2;
 		this.cy = screenHeight/2;
-	}
-	public Vec3 applyTo(Vec3 point){
-		return transform.applyTo(point);
 	}
 
 	public double getX(Vec3 p){
@@ -44,29 +38,29 @@ public class Viewport {
 		return (cy-(focalLength * p.y / p.z));
 	}
 
+	public Viewport moveX(double x){
+		move(x, 0, 0);
+		return this;
+	}
+	public Viewport moveY(double y){
+		move(0, y, 0);
+		return this;
+	}
+	public Viewport moveZ(double z){
+		move(0, 0, z);
+		return this;
+	}
+	
 	public Viewport translateX(double x){
-		transform.translate(x, 0, 0);
+		translate(x, 0, 0);
 		return this;
 	}
 	public Viewport translateY(double y){
-		transform.translate(0, y, 0);
+		translate(0, y, 0);
 		return this;
 	}
 	public Viewport translateZ(double z){
-		transform.translate(0, 0, z);
-		return this;
-	}
-
-	public Viewport rotateX(double pitch){
-		transform.rotateX(pitch);
-		return this;
-	}
-	public Viewport rotateY(double yaw){
-		transform.rotateY(yaw);
-		return this;
-	}
-	public Viewport rotateZ(double roll){
-		transform.rotateZ(roll);
+		translate(0, 0, z);
 		return this;
 	}
 }

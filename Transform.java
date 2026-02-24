@@ -1,47 +1,59 @@
 import Math.Mat3;
 import Math.Vec3;
 
-public final class Transform {
+public class Transform {
 	public Vec3 translation;
 	public Mat3 rot;
 	public Mat3 inv;
 	public Transform(){
-		final double EPSILON = 1e-8;
-		this.translation = new Vec3(EPSILON, EPSILON, EPSILON);
-		this.rot = Mat3.identity();
+		this.translation = new Vec3(0, 0, 0);
+		this.rot = Mat3.IDENTITY;
 		this.inv = rot.transpose();
-		rotateX(EPSILON);
-		rotateY(EPSILON);
-		rotateZ(EPSILON);
 	}
 
 	public Vec3 applyTo(Vec3 point){
 		return inv.transform(point.sub(translation));
 	}
 	
-	public Transform rotateX(double pitch){
+	public Transform turnX(double pitch){
 		rot = Mat3.multiply(rot, rotationX(-pitch));
 		inv = rot.transpose();
 		return this;
 	}
-	public Transform rotateY(double yaw){
+	public Transform turnY(double yaw){
 		rot = Mat3.multiply(rot, rotationY(-yaw));
 		inv = rot.transpose();
 		return this;
 	}
-	public Transform rotateZ(double roll){
+	public Transform turnZ(double roll){
 		rot = Mat3.multiply(rot, rotationZ(-roll));
+		inv = rot.transpose();
+		return this;
+	}
+	public Transform move(double forward, double right, double up){
+		Vec3 fixed = rot.transform(new Vec3(forward, right, up));
+		translation = translation.add(fixed);
+		return this;
+	}
+
+	public Transform rotateX(double pitch){
+		rot = Mat3.multiply(rotationX(-pitch), rot);
+		inv = rot.transpose();
+		return this;
+	}
+	public Transform rotateY(double yaw){
+		rot = Mat3.multiply(rotationY(-yaw), rot);
+		inv = rot.transpose();
+		return this;
+	}
+	public Transform rotateZ(double roll){
+		rot = Mat3.multiply(rotationZ(-roll), rot);
 		inv = rot.transpose();
 		return this;
 	}
 	
 	public Transform translate(double x, double y, double z){
-		Vec3 fixed = rot.transform(new Vec3(x, y, z));
-		translation = translation.add(fixed);
-		return this;
-	}
-	public Transform translateAbsolute(Vec3 vec){
-		translation = translation.add(vec);
+		translation = translation.add(new Vec3(x, y, z));
 		return this;
 	}
 	

@@ -36,8 +36,8 @@ public final class AABB{
 		}
 		return this;
 	}
+
 	public double testIntersection(final Vec3 origin, final Vec3 direction){
-		
 		double txenter = (minX-origin.x)/direction.x;
 		double txexit = (maxX-origin.x)/direction.x;
 
@@ -73,12 +73,7 @@ public final class AABB{
 		}
 		return -1;
 	}
-	/**
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @return the AABB itself, allowing chained calls
-	 */
+	
 	public AABB addPoint(double x, double y, double z){
 		if (x > maxX) maxX = x;
 		if (x < minX) minX = x;

@@ -57,19 +57,19 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 		double relativeSpeed = this.speed * dt/16.0;
 		double relativeRotSpeed = this.rotSpeed * dt/16.0;
 
-		if (input.keys['W']) 			{resetPixelBuffer(); camera.translateZ( relativeSpeed);}
-		if (input.keys['A']) 			{resetPixelBuffer(); camera.translateX(-relativeSpeed);}
-		if (input.keys['S']) 			{resetPixelBuffer(); camera.translateZ(-relativeSpeed);}
-		if (input.keys['D']) 			{resetPixelBuffer(); camera.translateX( relativeSpeed);}
-		if (input.keys[' ']) 			{resetPixelBuffer(); camera.translateY( relativeSpeed);}
-		if (input.keys[Input.SHIFT]) 	{resetPixelBuffer(); camera.translateY(-relativeSpeed);}
+		if (input.keys['W']) 			{resetPixelBuffer(); camera.moveZ( relativeSpeed);}
+		if (input.keys['A']) 			{resetPixelBuffer(); camera.moveX(-relativeSpeed);}
+		if (input.keys['S']) 			{resetPixelBuffer(); camera.moveZ(-relativeSpeed);}
+		if (input.keys['D']) 			{resetPixelBuffer(); camera.moveX( relativeSpeed);}
+		if (input.keys[' ']) 			{resetPixelBuffer(); camera.moveY( relativeSpeed);}
+		if (input.keys[Input.SHIFT]) 	{resetPixelBuffer(); camera.moveY(-relativeSpeed);}
 
-		if (input.keys[Input.UP_ARROW]) 	{resetPixelBuffer(); camera.rotateX( relativeRotSpeed);}
-		if (input.keys[Input.DOWN_ARROW]) 	{resetPixelBuffer(); camera.rotateX(-relativeRotSpeed);}
+		if (input.keys[Input.UP_ARROW]) 	{resetPixelBuffer(); camera.turnX( relativeRotSpeed);}
+		if (input.keys[Input.DOWN_ARROW]) 	{resetPixelBuffer(); camera.turnX(-relativeRotSpeed);}
 		if (input.keys[Input.LEFT_ARROW]) 	{resetPixelBuffer(); camera.rotateY( relativeRotSpeed);}
 		if (input.keys[Input.RIGHT_ARROW]) 	{resetPixelBuffer(); camera.rotateY(-relativeRotSpeed);}
-		if (input.keys['Q']) 				{resetPixelBuffer(); camera.rotateZ(-relativeRotSpeed);}
-		if (input.keys['E']) 				{resetPixelBuffer(); camera.rotateZ( relativeRotSpeed);}
+		if (input.keys['Q']) 				{resetPixelBuffer(); camera.turnZ(-relativeRotSpeed);}
+		if (input.keys['E']) 				{resetPixelBuffer(); camera.turnZ( relativeRotSpeed);}
 
 		if (input.keys['[']) {
 			if (raytrace){
@@ -172,15 +172,15 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 	}
 
 	private void pathtrace(int x1, int y1, int x2, int y2, int dx, int dy, Random random){
-		Vec3 origin = camera.transform.translation;
+		Vec3 origin = camera.translation;
 		for (int x = x1; x < x2; x += dx){
 			for (int y = y1; y < y2; y += dy){
 				Vec3 vector;
 				if (camera.focus == 0){
-					vector = camera.transform.rot.transform((new Vec3(x-camera.cx, camera.cy-y, camera.focalLength)).normalize());
+					vector = camera.rot.transform((new Vec3(x-camera.cx, camera.cy-y, camera.focalLength)).normalize());
 				} else {
-					origin = camera.transform.translation.add(new Vec3((random.nextDouble()-.5)*camera.focus, (random.nextDouble()-.5)*camera.focus, (random.nextDouble()-.5)*camera.focus));
-					Vec3 pixelPoint = camera.transform.translation.add(camera.transform.rot.transform(new Vec3(x-camera.cx, camera.cy-y, camera.focalLength).mul(camera.focusDistance/camera.focalLength)));
+					origin = camera.translation.add(new Vec3((random.nextDouble()-.5)*camera.focus, (random.nextDouble()-.5)*camera.focus, (random.nextDouble()-.5)*camera.focus));
+					Vec3 pixelPoint = camera.translation.add(camera.rot.transform(new Vec3(x-camera.cx, camera.cy-y, camera.focalLength).mul(camera.focusDistance/camera.focalLength)));
 					vector = pixelPoint.sub(origin).normalize();
 				}
 				

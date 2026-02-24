@@ -65,7 +65,7 @@ public class Material {
 		return new Material(1, color, Color.BLACK, 0, 0, false, 0, 0);
 	}
 	public static Material glass(Color color, double refractiveIndex){
-		return new Material(0, Color.BLACK, color, 1, 0, true, refractiveIndex, 0);
+		return new Material(0, Color.BLACK, color, 1, 0, true, refractiveIndex, 1);
 	}
 	public static Material frostedGlass(Color color, double refractiveIndex, double frostiness){
 		return new Material(0, Color.BLACK, color,frostiness, 0, true, refractiveIndex, 0);

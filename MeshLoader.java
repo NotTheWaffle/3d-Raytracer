@@ -20,9 +20,6 @@ public class MeshLoader{
 	public static Mesh loadObj(String filename, double size, Material material){
 		return loadObj(filename, new Transform(), size, material);
 	}
-	public static Mesh loadObj(String filename, double x, double y, double z, double size, Material material){
-		return loadObj(filename, new Transform().translate(x, y, z), size, material);
-	}
 	public static Mesh loadObj(String filename, Transform transform, double size, Material material){
 		return loadObj(filename, transform, size, material, true);
 	}
@@ -126,7 +123,7 @@ public class MeshLoader{
 		try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
 			List<String> lines = reader.lines().toList();
 			if (lines.get(0).equals("# compacted")){
-				System.out.println(filename+" is already compact");
+				System.out.println("  "+filename+" is already compact");
 				return true;
 			}
 			for (String line : lines){
@@ -152,10 +149,9 @@ public class MeshLoader{
 				}
 			}
 		} catch (IOException e) {
-			System.out.println("Failed to read "+filename);
+			System.out.println("  Failed to read "+filename);
 			return false;
 		}
-		System.out.println("Compacting "+filename);
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))){
 			writer.write("# compacted\n");
 			for (Vec3 point : points){
@@ -173,7 +169,7 @@ public class MeshLoader{
 			}
 			writer.write(str.toString());
 		} catch (IOException e){
-			System.out.println("Failed to save "+filename);
+			System.out.println("  Failed to save "+filename);
 		}
 		return false;
 	}

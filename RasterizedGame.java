@@ -39,19 +39,19 @@ public class RasterizedGame extends Game{
 		double relativeSpeed = this.speed * dt/16.0;
 		double relativeRotSpeed = this.rotSpeed * dt/16.0;
 
-		if (input.keys['W']) 			{camera.translateZ( relativeSpeed);}
-		if (input.keys['A']) 			{camera.translateX(-relativeSpeed);}
-		if (input.keys['S']) 			{camera.translateZ(-relativeSpeed);}
-		if (input.keys['D']) 			{camera.translateX( relativeSpeed);}
-		if (input.keys[' ']) 			{camera.translateY( relativeSpeed);}
-		if (input.keys[Input.SHIFT]) 	{camera.translateY(-relativeSpeed);}
+		if (input.keys['W']) 			{camera.moveZ( relativeSpeed);}
+		if (input.keys['A']) 			{camera.moveX(-relativeSpeed);}
+		if (input.keys['S']) 			{camera.moveZ(-relativeSpeed);}
+		if (input.keys['D']) 			{camera.moveX( relativeSpeed);}
+		if (input.keys[' ']) 			{camera.moveY( relativeSpeed);}
+		if (input.keys[Input.SHIFT]) 	{camera.moveY(-relativeSpeed);}
 
-		if (input.keys[Input.UP_ARROW]) 	{camera.rotateX( relativeRotSpeed);}
-		if (input.keys[Input.DOWN_ARROW]) 	{camera.rotateX(-relativeRotSpeed);}
-		if (input.keys[Input.LEFT_ARROW]) 	{camera.rotateY( relativeRotSpeed);}
-		if (input.keys[Input.RIGHT_ARROW]) 	{camera.rotateY(-relativeRotSpeed);}
-		if (input.keys['Q']) 				{camera.rotateZ(-relativeRotSpeed);}
-		if (input.keys['E']) 				{camera.rotateZ( relativeRotSpeed);}
+		if (input.keys[Input.UP_ARROW]) 	{camera.turnX( relativeRotSpeed);}
+		if (input.keys[Input.DOWN_ARROW]) 	{camera.turnX(-relativeRotSpeed);}
+		if (input.keys[Input.LEFT_ARROW]) 	{camera.turnY( relativeRotSpeed);}
+		if (input.keys[Input.RIGHT_ARROW]) 	{camera.turnY(-relativeRotSpeed);}
+		if (input.keys['Q']) 				{camera.turnZ(-relativeRotSpeed);}
+		if (input.keys['E']) 				{camera.turnZ( relativeRotSpeed);}
 
 		logicTime = System.nanoTime()-start;
 	}
@@ -80,7 +80,7 @@ public class RasterizedGame extends Game{
 		g2d.drawString("Logic  (ms):"+logicTime/1_000_000.0,0,40);
 	
 		g2d.drawString(Math.random()+"", 0, 100);
-		g2d.drawString("Cam Pos:"+camera.transform.translation.toString(), 0, 60);
-		g2d.drawString("Cam Rot:"+camera.transform.rot.toString(), 0, 80);
+		g2d.drawString("Cam Pos:"+camera.translation.toString(), 0, 60);
+		g2d.drawString("Cam Rot:"+camera.rot.toString(), 0, 80);
 	}
 }

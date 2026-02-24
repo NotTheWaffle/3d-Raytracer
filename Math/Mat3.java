@@ -4,6 +4,8 @@ public class Mat3 {
 	public final double m00, m01, m02;
 	public final double m10, m11, m12;
 	public final double m20, m21, m22;
+
+	public static final Mat3 IDENTITY = new Mat3(1);
 	
 	public Mat3(){
 		this(
@@ -25,13 +27,6 @@ public class Mat3 {
 		m00 = d00; m01 = d01; m02 = d02;
 		m10 = d10; m11 = d11; m12 = d12;
 		m20 = d20; m21 = d21; m22 = d22;
-	}
-	public static Mat3 identity() {
-		return new Mat3(
-		1,0,0,
-		0,1,0,
-		0,0,1
-		);
 	}
 	public Mat3 mul(Mat3 b) {
 		return new Mat3(
