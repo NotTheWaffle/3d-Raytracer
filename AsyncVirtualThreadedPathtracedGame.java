@@ -27,8 +27,6 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 	public final Pixel[][] pixelBuffer;
 
 	public List<Thread> threads;
-	
-	public static long logicTime;
 
 	public AsyncVirtualThreadedPathtracedGame(Viewport camera, Environment env){
 		super(camera.screenWidth, camera.screenHeight);
@@ -53,7 +51,6 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 	
 	@Override
 	public void tick(double dt){
-		long start = System.nanoTime();
 		double relativeSpeed = this.speed * dt/16.0;
 		double relativeRotSpeed = this.rotSpeed * dt/16.0;
 
@@ -66,8 +63,8 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 
 		if (input.keys[Input.UP_ARROW]) 	{resetPixelBuffer(); camera.turnX( relativeRotSpeed);}
 		if (input.keys[Input.DOWN_ARROW]) 	{resetPixelBuffer(); camera.turnX(-relativeRotSpeed);}
-		if (input.keys[Input.LEFT_ARROW]) 	{resetPixelBuffer(); camera.rotateY( relativeRotSpeed);}
-		if (input.keys[Input.RIGHT_ARROW]) 	{resetPixelBuffer(); camera.rotateY(-relativeRotSpeed);}
+		if (input.keys[Input.LEFT_ARROW]) 	{resetPixelBuffer(); camera.turnY( relativeRotSpeed);}
+		if (input.keys[Input.RIGHT_ARROW]) 	{resetPixelBuffer(); camera.turnY(-relativeRotSpeed);}
 		if (input.keys['Q']) 				{resetPixelBuffer(); camera.turnZ(-relativeRotSpeed);}
 		if (input.keys['E']) 				{resetPixelBuffer(); camera.turnZ( relativeRotSpeed);}
 
@@ -84,8 +81,6 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 			raytrace = false;
 			stopPathtracing();
 		}
-
-		logicTime = System.nanoTime()-start;
 	}
 
 	private void resetPixelBuffer(){
@@ -98,6 +93,22 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 	}
 
 	
+	@Override
+	public void generateFrame(){
+		if (input.keys['K'] && nextFrame != null){
+			try {
+				File outputfile = new File("saved.png");
+				ImageIO.write(nextFrame, "png", outputfile);
+			} catch (IOException e) {
+				System.out.println("Failed to save screenshot");
+			}
+		}
+		if (raytrace){
+			renderPathtraced();
+		} else {
+			nextFrame = renderRasterized();
+		}
+	}
 
 	private BufferedImage renderRasterized(){
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -116,33 +127,15 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 		}
 		return image;
 	}
-
-	@Override
-	public void generateFrame(){
-		if (input.keys['K'] && nextFrame != null){
-			try {
-				File outputfile = new File("saved.png");
-				ImageIO.write(nextFrame, "png", outputfile);
-			} catch (IOException e) {
-				System.out.println("Failed to save screenshot");
-			}
-		}
-		if (raytrace){
-			renderPathtraced();
-		} else {
-			nextFrame = renderRasterized();
-		}
-	}
-
 	private void renderPathtraced(){
 		WritableRaster raster = nextFrame.getRaster();
 		for (int y = 0; y < pixelBuffer.length; y++){
 			for (int x = 0; x < pixelBuffer[y].length; x++){
 				raster.setPixel(x, y, pixelBuffer[y][x].getColor());
 			}
-		}
-		
+		}	
 	}
+
 	private void beginPathtracing(int threadCount){
 		stopPathtracing();
 		int partitions = (int) Math.sqrt(threadCount);

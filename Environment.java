@@ -45,12 +45,15 @@ public class Environment{
 		add(new Sphere(new Vec3(0, 0, 2.5), 1, Material.solid(Color.RED)));
 		add(new Sphere(new Vec3(2.5, 0, 0), 1, Material.solid(Color.BLUE)));
 		add(new Sphere(new Vec3(-2.5, 0, 0), 1, Material.solid(Color.GREEN)));
+		addFloor();
+	}
+	public void addFloor(){
 		add(new RectangularPrism(0, -1.5, 0, 20, 1, 20, Material.SOLID, 0));
 	}
 	public void addHueSpheres(int count, double radius){
 		for (int i = 0; i < count; i++){
 			Color color = new Color(Color.HSBtoRGB((float)i/count, 1, 1));
-			add(new Sphere(Transform.rotationY(i*2*Math.PI/count).transform(new Vec3(3, 0, 0)), radius, Material.light(color)));
+			add(new Sphere(new Transform().rotateY(i*2*Math.PI/count).applyTo(new Vec3(3, 0, 0)), radius, Material.light(color)));
 		}
 	}
 	public void add(PhysicalObject object){

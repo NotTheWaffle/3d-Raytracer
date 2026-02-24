@@ -37,27 +37,26 @@ public class Transform {
 	}
 
 	public Transform rotateX(double pitch){
-		rot = Mat3.multiply(rotationX(-pitch), rot);
+		rot = Mat3.multiply(rotationX(pitch), rot);
 		inv = rot.transpose();
 		return this;
 	}
 	public Transform rotateY(double yaw){
-		rot = Mat3.multiply(rotationY(-yaw), rot);
+		rot = Mat3.multiply(rotationY(yaw), rot);
 		inv = rot.transpose();
 		return this;
 	}
 	public Transform rotateZ(double roll){
-		rot = Mat3.multiply(rotationZ(-roll), rot);
+		rot = Mat3.multiply(rotationZ(roll), rot);
 		inv = rot.transpose();
 		return this;
 	}
-	
 	public Transform translate(double x, double y, double z){
 		translation = translation.add(new Vec3(x, y, z));
 		return this;
 	}
 	
-	public static Mat3 rotationX(double pitch) {
+	private static Mat3 rotationX(double pitch) {
 		double c = Math.cos(pitch);
 		double s = Math.sin(pitch);
 		return new Mat3(
@@ -67,7 +66,7 @@ public class Transform {
 		);
 	}
 
-	public static Mat3 rotationY(double yaw) {
+	private static Mat3 rotationY(double yaw) {
 		double c = Math.cos(yaw);
 		double s = Math.sin(yaw);
 		return new Mat3(
@@ -77,7 +76,7 @@ public class Transform {
 		);
 	}
 
-	public static Mat3 rotationZ(double roll) {
+	private static Mat3 rotationZ(double roll) {
 		double c = Math.cos(roll);
 		double s = Math.sin(roll);
 		return new Mat3(
