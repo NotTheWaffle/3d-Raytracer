@@ -4,16 +4,16 @@ import java.awt.Color;
  * fake enums
  */
 public class Material {
-	public final double[] emissionColor;
-	public final double emissionStrength;
+	public final float[] emissionColor;
+	public final float emissionStrength;
 
-	public final double[] reflectionColor;
-	public final double specularity;
-	public final double specularityChance;
+	public final float[] reflectionColor;
+	public final float specularity;
+	public final float specularityChance;
 
 	public final boolean transparent;
-	public final double refractiveIndex;
-	public final double absorption;
+	public final float refractiveIndex;
+	public final float absorption;
 
 	/** A white material that emits no light. Fully diffuse reflections.*/
 	public static final Material SOLID = solid(Color.WHITE);
@@ -26,13 +26,13 @@ public class Material {
 	/** A material that emits no light. Reflects all light somewhat specularly.*/
 	public static final Material METAL = metal(Color.WHITE);
 	/** A white material that emits no light. Refracts all light with an index of 1.5 (glass).*/
-	public static final Material GLASS = glass(Color.WHITE, 1.5);
+	public static final Material GLASS = glass(Color.WHITE, 1.5f);
 
-	private Material(double emissionStrength, Color emissionColor, Color reflectionColor, double specularity, double specularityChance, boolean transparent, double refractiveIndex, double absorption){
+	private Material(float emissionStrength, Color emissionColor, Color reflectionColor, float specularity, float specularityChance, boolean transparent, float refractiveIndex, float absorption){
 		this.emissionStrength = emissionStrength;
-		this.emissionColor = new double[] {emissionColor.getRed()/255.0, emissionColor.getGreen()/255.0, emissionColor.getBlue()/255.0};
+		this.emissionColor = new float[] {emissionColor.getRed()/255.0f, emissionColor.getGreen()/255.0f, emissionColor.getBlue()/255.0f};
 		
-		this.reflectionColor = new double[] {reflectionColor.getRed()/255.0, reflectionColor.getGreen()/255.0, reflectionColor.getBlue()/255.0};
+		this.reflectionColor = new float[] {reflectionColor.getRed()/255.0f, reflectionColor.getGreen()/255.0f, reflectionColor.getBlue()/255.0f};
 		this.specularity = specularity;
 		this.specularityChance = specularityChance;
 
@@ -40,11 +40,11 @@ public class Material {
 		this.refractiveIndex = refractiveIndex;
 		this.absorption = absorption;
 	}
-	public Material(double[] color, double strength){
+	public Material(float[] color, float strength){
 		this.emissionStrength = strength;
 		this.emissionColor = color;
 
-		this.reflectionColor = new double[] {0, 0, 0};
+		this.reflectionColor = new float[] {0, 0, 0};
 		this.specularity = 0;
 		this.specularityChance = 0;
 
@@ -56,18 +56,18 @@ public class Material {
 		return new Material(0, Color.BLACK, color, 0, 0, false, 0, 0);
 	}
 	public static Material plastic(Color color){
-		return new Material(0, Color.BLACK, color, 1, .1, false, 0, 0);
+		return new Material(0, Color.BLACK, color, 1, .1f, false, 0, 0);
 	}
 	public static Material metal(Color color){
-		return new Material(0, Color.BLACK, color, .5, 1, false, 0, 0);
+		return new Material(0, Color.BLACK, color, .5f, 1, false, 0, 0);
 	}
 	public static Material light(Color color){
 		return new Material(1, color, Color.BLACK, 0, 0, false, 0, 0);
 	}
-	public static Material glass(Color color, double refractiveIndex){
+	public static Material glass(Color color, float refractiveIndex){
 		return new Material(0, Color.BLACK, color, 1, 0, true, refractiveIndex, 0);
 	}
-	public static Material frostedGlass(Color color, double refractiveIndex, double frostiness){
+	public static Material frostedGlass(Color color, float refractiveIndex, float frostiness){
 		return new Material(0, Color.BLACK, color,frostiness, 0, true, refractiveIndex, 0);
 	}
 }

@@ -27,9 +27,9 @@ public class BVH {
 		List<Triangle> side0 = new ArrayList<>();
 		List<Triangle> side1 = new ArrayList<>();
 
-		double xRange = bounds.maxX-bounds.minX;
-		double yRange = bounds.maxY-bounds.minY;
-		double zRange = bounds.maxZ-bounds.minZ;
+		float xRange = bounds.maxX-bounds.minX;
+		float yRange = bounds.maxY-bounds.minY;
+		float zRange = bounds.maxZ-bounds.minZ;
 		if (xRange > yRange && xRange > zRange){
 			splitX(triangles, xRange/2+bounds.minX, side0, side1);
 		} else if (yRange > xRange && yRange > zRange){
@@ -50,7 +50,7 @@ public class BVH {
 		node1 = new BVH(side1);
 	}
 	
-	public static void splitX(List<Triangle> triangles, double split, List<Triangle> side0, List<Triangle> side1){
+	public static void splitX(List<Triangle> triangles, float split, List<Triangle> side0, List<Triangle> side1){
 		for (Triangle tri : triangles){
 			if (tri.center().x > split){
 				side1.add(tri);
@@ -59,7 +59,7 @@ public class BVH {
 			}
 		}
 	}
-	public static void splitY(List<Triangle> triangles, double split, List<Triangle> side0, List<Triangle> side1){
+	public static void splitY(List<Triangle> triangles, float split, List<Triangle> side0, List<Triangle> side1){
 		for (Triangle tri : triangles){
 			if (tri.center().y > split){
 				side1.add(tri);
@@ -68,7 +68,7 @@ public class BVH {
 			}
 		}
 	}
-	public static void splitZ(List<Triangle> triangles, double split, List<Triangle> side0, List<Triangle> side1){
+	public static void splitZ(List<Triangle> triangles, float split, List<Triangle> side0, List<Triangle> side1){
 		for (Triangle tri : triangles){
 			if (tri.center().z > split){
 				side1.add(tri);
@@ -88,13 +88,13 @@ public class BVH {
 			}
 			BVH close = node0;
 			BVH far = node1;
-			double closeTime = close.testIntersection(origin, direction);
-			double farTime = far.testIntersection(origin, direction);
+			float closeTime = close.testIntersection(origin, direction);
+			float farTime = far.testIntersection(origin, direction);
 			if (farTime < closeTime){
 				BVH temp = close;
 				close = far;
 				far = temp;
-				double tempTime = closeTime;
+				float tempTime = closeTime;
 				closeTime = farTime;
 				farTime = tempTime;
 			}
@@ -117,10 +117,10 @@ public class BVH {
 		}
 		return intersection;
 	}
-	public double testIntersection(Vec3 origin, Vec3 direction){
+	public float testIntersection(Vec3 origin, Vec3 direction){
 		return bounds.testIntersection(origin, direction.normalize());
 	}
-	public void renderWireframe(WritableRaster raster, double[][] zBuffer, Viewport camera) {
+	public void renderWireframe(WritableRaster raster, float[][] zBuffer, Viewport camera) {
 		if (null == null) return;
 		if (node0 != null) {
 			node0.renderWireframe(raster, zBuffer, camera);

@@ -3,12 +3,12 @@ import Math.Vec3;
 import java.util.List;
 
 public final class AABB{
-	public double maxX, maxY, maxZ, minX, minY, minZ;
+	public float maxX, maxY, maxZ, minX, minY, minZ;
 	public AABB(){
-		maxX = maxY = maxZ = Double.NEGATIVE_INFINITY;
-		minX = minY = minZ = Double.POSITIVE_INFINITY;
+		maxX = maxY = maxZ = Float.NEGATIVE_INFINITY;
+		minX = minY = minZ = Float.POSITIVE_INFINITY;
 	}
-	public AABB(double x, double y, double z){
+	public AABB(float x, float y, float z){
 		minX = maxX = x;
 		minY = maxY = y;
 		minZ = maxZ = z;
@@ -37,36 +37,36 @@ public final class AABB{
 		return this;
 	}
 
-	public double testIntersection(final Vec3 origin, final Vec3 direction){
-		double txenter = (minX-origin.x)/direction.x;
-		double txexit = (maxX-origin.x)/direction.x;
+	public float testIntersection(final Vec3 origin, final Vec3 direction){
+		float txenter = (minX-origin.x)/direction.x;
+		float txexit = (maxX-origin.x)/direction.x;
 
 		if (txenter > txexit){
-			final double temp = txenter;
+			final float temp = txenter;
 			txenter = txexit;
 			txexit = temp;
 		}
 		
-		double tyenter = (minY-origin.y)/direction.y;
-		double tyexit = (maxY-origin.y)/direction.y;
+		float tyenter = (minY-origin.y)/direction.y;
+		float tyexit = (maxY-origin.y)/direction.y;
 
 		if (tyenter > tyexit){
-			final double temp = tyenter;
+			final float temp = tyenter;
 			tyenter = tyexit;
 			tyexit = temp;
 		}
 		
-		double tzenter = (minZ-origin.z)/direction.z;
-		double tzexit = (maxZ-origin.z)/direction.z;
+		float tzenter = (minZ-origin.z)/direction.z;
+		float tzexit = (maxZ-origin.z)/direction.z;
 
 		if (tzenter > tzexit){
-			final double temp = tzenter;
+			final float temp = tzenter;
 			tzenter = tzexit;
 			tzexit = temp;
 		}
 
-		final double tenter = Math.max(txenter, Math.max(tyenter, tzenter));
-		final double texit = Math.min(txexit, Math.min(tyexit, tzexit));
+		final float tenter = Math.max(txenter, Math.max(tyenter, tzenter));
+		final float texit = Math.min(txexit, Math.min(tyexit, tzexit));
 
 		if (tenter <= texit && texit > 0){
 			return Math.max(tenter, 0);
@@ -74,7 +74,7 @@ public final class AABB{
 		return -1;
 	}
 	
-	public AABB addPoint(double x, double y, double z){
+	public AABB addPoint(float x, float y, float z){
 		if (x > maxX) maxX = x;
 		if (x < minX) minX = x;
 

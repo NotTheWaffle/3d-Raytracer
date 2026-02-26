@@ -3,8 +3,8 @@ import Math.Vec3;
 import java.awt.image.WritableRaster;
 
 public final class RectangularPrism extends PhysicalObject{
-	public final double maxX, maxY, maxZ, minX, minY, minZ;
-	public RectangularPrism(double x0, double x1, double y0, double y1, double z0, double z1, Material material){
+	public final float maxX, maxY, maxZ, minX, minY, minZ;
+	public RectangularPrism(float x0, float x1, float y0, float y1, float z0, float z1, Material material){
 		super(material);
 		this.maxX = Math.max(x0, x1);
 		this.minX = Math.min(x0, x1);
@@ -15,14 +15,14 @@ public final class RectangularPrism extends PhysicalObject{
 		this.maxZ = Math.max(z0, z1);
 		this.minZ = Math.min(z0, z1);
 	}
-	public RectangularPrism(double x, double y, double z, double width, double height, double length, Material material, int flag){
+	public RectangularPrism(float x, float y, float z, float width, float height, float length, Material material, int flag){
 		this(x-width/2, x+width/2, y-height/2, y+height/2, z-length/2, z+length/2, material);
 	}
 	@Override
 	public Intersection getIntersection(Vec3 origin, Vec3 direction){
-		double temp;
-		double txenter = (minX-origin.x)/direction.x;
-		double txexit = (maxX-origin.x)/direction.x;
+		float temp;
+		float txenter = (minX-origin.x)/direction.x;
+		float txexit = (maxX-origin.x)/direction.x;
 
 		if (txenter > txexit){
 			temp = txenter;
@@ -30,8 +30,8 @@ public final class RectangularPrism extends PhysicalObject{
 			txexit = temp;
 		}
 		
-		double tyenter = (minY-origin.y)/direction.y;
-		double tyexit = (maxY-origin.y)/direction.y;
+		float tyenter = (minY-origin.y)/direction.y;
+		float tyexit = (maxY-origin.y)/direction.y;
 
 		if (tyenter > tyexit){
 			temp = tyenter;
@@ -39,8 +39,8 @@ public final class RectangularPrism extends PhysicalObject{
 			tyexit = temp;
 		}
 		
-		double tzenter = (minZ-origin.z)/direction.z;
-		double tzexit = (maxZ-origin.z)/direction.z;
+		float tzenter = (minZ-origin.z)/direction.z;
+		float tzexit = (maxZ-origin.z)/direction.z;
 
 		if (tzenter > tzexit){
 			temp = tzenter;
@@ -49,30 +49,37 @@ public final class RectangularPrism extends PhysicalObject{
 		}
 
 		Vec3 normal = null;
-		double tenter = Double.NEGATIVE_INFINITY;
-		if (txenter > tenter){
-			tenter = txenter;
-			normal = new Vec3(direction.x > 0 ? -1 : 1, 0, 0);
-		}
-		if (tyenter > tenter){
-			tenter = tyenter;
-			normal = new Vec3(0, direction.y > 0 ? -1 : 1, 0);
-		}
-		if (tzenter > tenter){
-			tenter = tzenter;
-			normal = new Vec3(0, 0, direction.z > 0 ? -1 : 1);
-		}
-		double texit = Math.min(txexit, Math.min(tyexit, tzexit));
+		float tenter = Math.max(txenter, Math.max(tyenter, tzenter));
+		float texit = Math.min(txexit, Math.min(tyexit, tzexit));
+		if (tenter > texit || texit < 0) return null;
 
-		if (tenter - texit > EPSILON || tenter < 0){
-			return null;
+		float thit;
+		if (tenter > 0){
+			thit = tenter;
+			if (txenter == tenter){
+				normal = new Vec3(direction.x > 0 ? -1 : 1, 0, 0);
+			} else if (tyenter == tenter){
+				normal = new Vec3(0, direction.y > 0 ? -1 : 1, 0);
+			} else if (tzenter == tenter){
+				normal = new Vec3(0, 0, direction.z > 0 ? -1 : 1);
+			}
+		} else {
+			thit = texit;
+			if (txexit == texit){
+				normal = new Vec3(direction.x > 0 ? 1 : -1, 0, 0);
+			} else if (tyexit == texit){
+				normal = new Vec3(0, direction.y > 0 ? 1 : -1, 0);
+			} else if (tzexit == texit){
+				normal = new Vec3(0, 0, direction.z > 0 ? 1 : -1);
+			}
 		}
-		return new Intersection(origin.add(direction.mul(tenter)), this.material, normal, false);
+		if (normal == null) normal = new Vec3(1, 1, 1);
+		return new Intersection(origin.add(direction.mul(thit)), this.material, normal, normal.dot(direction) > 0);
 	}
 	
 	
 	@Override
-	public void renderRasterized(WritableRaster raster, double[][] zBuffer, Viewport camera) {
+	public void renderRasterized(WritableRaster raster, float[][] zBuffer, Viewport camera) {
 		Vec3 p0 = new Vec3(maxX, maxY, maxZ);
 		Vec3 p1 = new Vec3(maxX, maxY, minZ);
 		Vec3 p2 = new Vec3(maxX, minY, maxZ);

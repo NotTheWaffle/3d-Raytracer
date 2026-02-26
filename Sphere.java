@@ -1,19 +1,20 @@
 
+import Math.FloatMath;
 import Math.Vec3;
 import java.awt.image.WritableRaster;
 
 public class Sphere extends PhysicalObject{
 	public final Vec3 point;
-	public final double radius;
+	public final float radius;
 
-	public Sphere(Vec3 point, double radius, Material material){
+	public Sphere(Vec3 point, float radius, Material material){
 		super(material);
 		this.point = point;
 		this.radius = radius;
 	}
 
 	@Override
-	public void renderRasterized(WritableRaster raster, double[][] zBuffer, Viewport camera) {
+	public void renderRasterized(WritableRaster raster, float[][] zBuffer, Viewport camera) {
 		Vec3 p = camera.applyTo(this.point);
 		if (p.z < 0) return;
 		
@@ -53,24 +54,24 @@ public class Sphere extends PhysicalObject{
 	public Intersection getIntersection(Vec3 rayOrigin, Vec3 rayVector){
 		Vec3 l = rayOrigin.sub(point);
 		
-		double b = 2 * rayVector.dot(l);
-		double c = l.dot(l) - radius*radius;
+		float b = 2 * rayVector.dot(l);
+		float c = l.dot(l) - radius*radius;
 
 
-		double discriminant = b*b - 4*c;
+		float discriminant = b*b - 4*c;
 
 		if (discriminant < 0) return null;
-		double sqrtD = Math.sqrt(discriminant);
+		float sqrtD = FloatMath.sqrt(discriminant);
 
-		double t0 = (-b - sqrtD) / 2;
-		double t1 = (-b + sqrtD) / 2;
+		float t0 = (-b - sqrtD) / 2;
+		float t1 = (-b + sqrtD) / 2;
 
-		double t = Double.POSITIVE_INFINITY;
+		float t = Float.POSITIVE_INFINITY;
 		
 		if (t0 > EPSILON && t0 < t) t = t0;
 		if (t1 > EPSILON && t1 < t) t = t1;
 
-		if (t == Double.POSITIVE_INFINITY) return null;
+		if (t == Float.POSITIVE_INFINITY) return null;
 		Vec3 intersectionPoint = rayOrigin.add(rayVector.mul(t));
 		Vec3 normal = intersectionPoint.sub(point).normalize();
 		

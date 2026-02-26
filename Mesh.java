@@ -20,7 +20,7 @@ public class Mesh extends PhysicalObject{
 		this.bvh = new BVH(triangles);
 	}
 	@Override
-	public void renderRasterized(WritableRaster raster, double[][] zBuffer, Viewport camera) {
+	public void renderRasterized(WritableRaster raster, float[][] zBuffer, Viewport camera) {
 		for (Triangle tri : triangles){
 			tri.render(raster, zBuffer, camera);
 		}

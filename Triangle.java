@@ -4,7 +4,7 @@ import java.awt.image.WritableRaster;
 import java.util.List;
 
 public final class Triangle{
-	public final static double EPSILON = 1e-8;
+	public final static float EPSILON = 1e-8f;
 	public final Vec3 p1;
 	public final Vec3 p2;
 	public final Vec3 p3;
@@ -19,23 +19,23 @@ public final class Triangle{
 		this(points.get(i1), points.get(i2), points.get(i3));
 	}
 	public Vec3 center(){
-		return (p1.add(p2).add(p3)).mul(1.0/3);
+		return (p1.add(p2).add(p3)).mul(1.0f/3.0f);
 	}
 	private Vec3 normal() {
 		Vec3 edge1 = p2.sub(p1);
 		Vec3 edge2 = p3.sub(p1);
 		return edge1.cross(edge2).normalize();
 	}
-	public void render(WritableRaster raster, double[][] zBuffer, Viewport camera) {
+	public void render(WritableRaster raster, float[][] zBuffer, Viewport camera) {
 		Vec3 projectedP1 = camera.applyTo(this.p1);
 		Vec3 projectedP2 = camera.applyTo(this.p2);
 		Vec3 projectedP3 = camera.applyTo(this.p3);
 		
 		if (projectedP1.z < 0 || projectedP2.z < 0 || projectedP3.z < 0) return;
 
-		double iz1 = 1.0 / projectedP1.z;
-		double iz2 = 1.0 / projectedP2.z;
-		double iz3 = 1.0 / projectedP3.z;
+		float iz1 = 1.0f / projectedP1.z;
+		float iz2 = 1.0f / projectedP2.z;
+		float iz3 = 1.0f / projectedP3.z;
 
 
 		int x1 = (int) camera.getX(projectedP1);
@@ -52,7 +52,7 @@ public final class Triangle{
 		int minY = Math.max(0, Math.min(y1, Math.min(y2, y3)));
 		int maxY = Math.min(zBuffer[0].length - 1, Math.max(y1, Math.max(y2, y3)));
 
-		double area = edge(x1, y1, x2, y2, x3, y3);
+		float area = edge(x1, y1, x2, y2, x3, y3);
 		if (area == 0) return;
 
 		int[] rgb = {
@@ -61,15 +61,15 @@ public final class Triangle{
 			255,
 			255
 		};
-		double ia = 1/area;
-		double w1Incr = (y3-y2) * ia;
-		double w2Incr = (y1-y3) * ia;
-		double w3Incr = (y2-y1) * ia;
+		float ia = 1/area;
+		float w1Incr = (y3-y2) * ia;
+		float w2Incr = (y1-y3) * ia;
+		float w3Incr = (y2-y1) * ia;
 
 		for (int y = minY; y <= maxY; y++) {
-			double w1 = edge(x2, y2, x3, y3, minX-1, y) * ia;
-			double w2 = edge(x3, y3, x1, y1, minX-1, y) * ia;
-			double w3 = edge(x1, y1, x2, y2, minX-1, y) * ia;
+			float w1 = edge(x2, y2, x3, y3, minX-1, y) * ia;
+			float w2 = edge(x3, y3, x1, y1, minX-1, y) * ia;
+			float w3 = edge(x1, y1, x2, y2, minX-1, y) * ia;
 			for (int x = minX; x <= maxX; x++) {
 
 				w1 += w1Incr;
@@ -77,8 +77,8 @@ public final class Triangle{
 				w3 += w3Incr;
 
 				if (w1 >= 0 && w2 >= 0 && w3 >= 0) {
-					double iz = w1 * iz1 + w2 * iz2 + w3 * iz3;
-					double z = 1/iz;
+					float iz = w1 * iz1 + w2 * iz2 + w3 * iz3;
+					float z = 1/iz;
 					if (z < zBuffer[x][y]) {
 						
 						zBuffer[x][y] = z;
@@ -88,7 +88,7 @@ public final class Triangle{
 			}
 		}
 	}
-	private static double edge(int x1, int y1, int x2, int y2, int x, int y) {
+	private static float edge(int x1, int y1, int x2, int y2, int x, int y) {
 		return (x - x1) * (y2 - y1) - (y - y1) * (x2 - x1);
 	}
 	public Intersection getIntersection(Vec3 rayOrigin, Vec3 rayDirection){
@@ -96,22 +96,22 @@ public final class Triangle{
 		Vec3 edge2 = p3.sub(p1);
 		Vec3 h = rayDirection.cross(edge2);
 
-		double a = edge1.dot(h);
+		float a = edge1.dot(h);
 
 		if (a > -EPSILON && a < EPSILON) return null;
 
-		double f = 1.0 / a;
+		float f = 1.0f / a;
 		Vec3 s = rayOrigin.sub(p1);
-		double u = f * s.dot(h);
+		float u = f * s.dot(h);
 
 		if (u < 0.0 || u > 1.0) return null;
 
 		Vec3 q = s.cross(edge1);
-		double v = f * rayDirection.dot(q);
+		float v = f * rayDirection.dot(q);
 
 		if (v < 0.0 || u + v > 1.0) return null;
 
-		double t = f * edge2.dot(q);
+		float t = f * edge2.dot(q);
 		if (t < EPSILON) return null;
 
 		return new Intersection(rayDirection.mul(t).add(rayOrigin), null, this.normal, rayDirection.dot(normal) > 0);

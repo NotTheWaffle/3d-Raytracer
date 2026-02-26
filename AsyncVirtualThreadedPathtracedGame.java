@@ -15,10 +15,10 @@ import javax.imageio.ImageIO;
 public class AsyncVirtualThreadedPathtracedGame extends Game{
 	
 	// this is only for rasterized rendering
-	private final double[][] zBuffer;
+	private final float[][] zBuffer;
 	// this is distance per 16 ms
-	public final double speed = .02;
-	public final double rotSpeed = .03;
+	public final float speed = .02f;
+	public final float rotSpeed = .03f;
 	// these represent the entire model
 	private final Viewport camera;
 	private final Environment env;
@@ -34,7 +34,7 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 		this.env = env;
 		this.camera = camera;
 	
-		zBuffer = new double[width][height];
+		zBuffer = new float[width][height];
 
 		pixelBuffer = new Pixel[height][width];
 		for (Pixel[] row : pixelBuffer) {
@@ -51,8 +51,8 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 	
 	@Override
 	public void tick(double dt){
-		double relativeSpeed = this.speed * dt/16.0;
-		double relativeRotSpeed = this.rotSpeed * dt/16.0;
+		float relativeSpeed = (float) (this.speed * dt/16.0f);
+		float relativeRotSpeed = (float) (this.rotSpeed * dt/16.0f);
 
 		if (input.keys['W']) 			{resetPixelBuffer(); camera.moveZ( relativeSpeed);}
 		if (input.keys['A']) 			{resetPixelBuffer(); camera.moveX(-relativeSpeed);}
@@ -114,7 +114,7 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		WritableRaster raster = image.getRaster();
 		for (int x = 0; x < width; x++) {
-			Arrays.fill(zBuffer[x], Double.POSITIVE_INFINITY);
+			Arrays.fill(zBuffer[x], Float.POSITIVE_INFINITY);
 		}
 		
 		for (PhysicalObject object : env.physicalObjects){
@@ -172,12 +172,12 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 				if (camera.focus == 0){
 					vector = camera.rot.transform((new Vec3(x-camera.cx, camera.cy-y, camera.focalLength)).normalize());
 				} else {
-					origin = camera.translation.add(new Vec3((random.nextDouble()-.5)*camera.focus, (random.nextDouble()-.5)*camera.focus, (random.nextDouble()-.5)*camera.focus));
+					origin = camera.translation.add(new Vec3((random.nextFloat()-.5f)*camera.focus, (random.nextFloat()-.5f)*camera.focus, (random.nextFloat()-.5f)*camera.focus));
 					Vec3 pixelPoint = camera.translation.add(camera.rot.transform(new Vec3(x-camera.cx, camera.cy-y, camera.focalLength).mul(camera.focusDistance/camera.focalLength)));
 					vector = pixelPoint.sub(origin).normalize();
 				}
 				
-				double[] col = Ray.trace(origin, vector, env, 10, random);
+				float[] col = Ray.trace(origin, vector, env, 10, random);
 				
 				pixelBuffer[y][x].addSample(
 					new int[] {

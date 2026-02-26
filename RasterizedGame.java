@@ -8,10 +8,10 @@ import java.util.Arrays;
 
 public class RasterizedGame extends Game{
 
-	private final double[][] zBuffer;
+	private final float[][] zBuffer;
 
-	public final double speed = .02;
-	public final double rotSpeed = .03;
+	public final float speed = .02f;
+	public final float rotSpeed = .03f;
 
 	private final Viewport camera;
 
@@ -25,7 +25,7 @@ public class RasterizedGame extends Game{
 		
 		this.camera = camera;
 
-		zBuffer = new double[width][height];
+		zBuffer = new float[width][height];
 	}
 
 	@Override
@@ -36,8 +36,8 @@ public class RasterizedGame extends Game{
 	@Override
 	public void tick(double dt){
 		long start = System.nanoTime();
-		double relativeSpeed = this.speed * dt/16.0;
-		double relativeRotSpeed = this.rotSpeed * dt/16.0;
+		float relativeSpeed = (float) (this.speed * dt/16.0);
+		float relativeRotSpeed = (float) (this.rotSpeed * dt/16.0);
 
 		if (input.keys['W']) 			{camera.moveZ( relativeSpeed);}
 		if (input.keys['A']) 			{camera.moveX(-relativeSpeed);}
@@ -58,7 +58,7 @@ public class RasterizedGame extends Game{
 
 	private void clearZBuffer() {
 		for (int x = 0; x < width; x++) {
-			Arrays.fill(zBuffer[x], Double.POSITIVE_INFINITY);
+			Arrays.fill(zBuffer[x], Float.POSITIVE_INFINITY);
 		}
 	}
 	

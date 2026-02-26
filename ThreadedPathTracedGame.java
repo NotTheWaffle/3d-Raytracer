@@ -17,10 +17,10 @@ import javax.imageio.ImageIO;
 public class ThreadedPathTracedGame extends Game{
 	
 	// this is only for rasterized rendering
-	private final double[][] zBuffer;
+	private final float[][] zBuffer;
 	// this is distance per 16 ms
-	public final double speed = .02;
-	public final double rotSpeed = .03;
+	public final float speed = .02f;
+	public final float rotSpeed = .03f;
 	// these represent the entire model
 	private final Viewport camera;
 	private final Environment env;
@@ -37,7 +37,7 @@ public class ThreadedPathTracedGame extends Game{
 		this.camera = camera;
 		camera.translate(0, 0, -1);
 	
-		zBuffer = new double[width][height];
+		zBuffer = new float[width][height];
 
 		pixelBuffer = new Pixel[height][width];
 		for (Pixel[] row : pixelBuffer) {
@@ -55,8 +55,8 @@ public class ThreadedPathTracedGame extends Game{
 	@Override
 	public void tick(double dt){
 		long start = System.nanoTime();
-		double relativeSpeed = this.speed * dt/16.0;
-		double relativeRotSpeed = this.rotSpeed * dt/16.0;
+		float relativeSpeed = (float) (this.speed * dt/16.0);
+		float relativeRotSpeed = (float) (this.rotSpeed * dt/16.0);
 
 		if (input.keys['W']) 			{resetPixelBuffer(); camera.moveZ( relativeSpeed);}
 		if (input.keys['A']) 			{resetPixelBuffer(); camera.moveX(-relativeSpeed);}
@@ -80,7 +80,7 @@ public class ThreadedPathTracedGame extends Game{
 
 	private void clearZBuffer() {
 		for (int x = 0; x < width; x++) {
-			Arrays.fill(zBuffer[x], Double.POSITIVE_INFINITY);
+			Arrays.fill(zBuffer[x], Float.POSITIVE_INFINITY);
 		}
 	}
 
@@ -156,7 +156,6 @@ public class ThreadedPathTracedGame extends Game{
 	}
 	
 	private void raytraceRange(int x1, int y1, int x2, int y2, WritableRaster raster, final int samples){
-		final double EPSILON = 1e-8;
 		Random random = ThreadLocalRandom.current();
 		Vec3 origin = camera.translation;
 		for (int x = x1; x < x2; x += 1){
@@ -165,7 +164,7 @@ public class ThreadedPathTracedGame extends Game{
 				if (camera.focus == 0){
 					vector = camera.rot.transform((new Vec3(x-camera.cx, camera.cy-y, camera.focalLength)).normalize());
 				} else {
-					origin = camera.translation.add(new Vec3((random.nextDouble()-.5)*camera.focus, (random.nextDouble()-.5)*camera.focus, (random.nextDouble()-.5)*camera.focus));
+					origin = camera.translation.add(new Vec3((random.nextFloat()-.5f)*camera.focus, (random.nextFloat()-.5f)*camera.focus, (random.nextFloat()-.5f)*camera.focus));
 					Vec3 pixelPoint = camera.translation.add(camera.rot.transform(new Vec3(x-camera.cx, camera.cy-y, camera.focalLength).mul(camera.focusDistance/camera.focalLength)));
 					vector = pixelPoint.sub(origin).normalize();
 				}
@@ -174,7 +173,7 @@ public class ThreadedPathTracedGame extends Game{
 				int[] color = new int[3];
 				
 				for (int i = 0; i < samples; i++){
-					double[] col = Ray.trace(origin, vector, env, 10, random);
+					float[] col = Ray.trace(origin, vector, env, 10, random);
 					color[0] += (int) (255.0 * col[0]);
 					color[1] += (int) (255.0 * col[1]);
 					color[2] += (int) (255.0 * col[2]);

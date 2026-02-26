@@ -7,9 +7,9 @@ public class Pixel {
 	public int samples;
 
 	public Pixel(){
-		this(new double[3], 0);
+		this(new float[3], 0);
 	}
-	public Pixel(double[] color, int weight){
+	public Pixel(float[] color, int weight){
 		this.rColor = (int) (255 * color[0]);
 		this.gColor = (int) (255 * color[1]);
 		this.bColor = (int) (255 * color[2]);

@@ -1,9 +1,9 @@
 package Math;
 
 public class Mat3 {
-	public final double m00, m01, m02;
-	public final double m10, m11, m12;
-	public final double m20, m21, m22;
+	public final float m00, m01, m02;
+	public final float m10, m11, m12;
+	public final float m20, m21, m22;
 
 	public static final Mat3 IDENTITY = new Mat3(1);
 	
@@ -14,16 +14,16 @@ public class Mat3 {
 			0, 0, 0
 		);
 	}
-	public Mat3(double d){
+	public Mat3(float d){
 		this(
 			d, 0, 0,
 			0, d, 0,
 			0, 0, d
 		);
 	}
-	public Mat3(double d00, double d01, double d02,
-				double d10, double d11, double d12,
-				double d20, double d21, double d22 ){
+	public Mat3(float d00, float d01, float d02,
+				float d10, float d11, float d12,
+				float d20, float d21, float d22 ){
 		m00 = d00; m01 = d01; m02 = d02;
 		m10 = d10; m11 = d11; m12 = d12;
 		m20 = d20; m21 = d21; m22 = d22;
@@ -76,28 +76,28 @@ public class Mat3 {
 	@Override
 	public int hashCode() {
 		int result = 1;
-		long bits;
+		int bits;
 
-		bits = Double.doubleToLongBits(m00);
-		result = 31 * result + (int) (bits ^ (bits >>> 32));
-		bits = Double.doubleToLongBits(m01);
-		result = 31 * result + (int) (bits ^ (bits >>> 32));
-		bits = Double.doubleToLongBits(m02);
-		result = 31 * result + (int) (bits ^ (bits >>> 32));
+		bits = Float.floatToIntBits(m00);
+		result = 31 * result + (int) (bits);
+		bits = Float.floatToIntBits(m01);
+		result = 31 * result + (int) (bits);
+		bits = Float.floatToIntBits(m02);
+		result = 31 * result + (int) (bits);
 
-		bits = Double.doubleToLongBits(m10);
-		result = 31 * result + (int) (bits ^ (bits >>> 32));
-		bits = Double.doubleToLongBits(m11);
-		result = 31 * result + (int) (bits ^ (bits >>> 32));
-		bits = Double.doubleToLongBits(m12);
-		result = 31 * result + (int) (bits ^ (bits >>> 32));
+		bits = Float.floatToIntBits(m10);
+		result = 31 * result + (int) (bits);
+		bits = Float.floatToIntBits(m11);
+		result = 31 * result + (int) (bits);
+		bits = Float.floatToIntBits(m12);
+		result = 31 * result + (int) (bits);
 
-		bits = Double.doubleToLongBits(m20);
-		result = 31 * result + (int) (bits ^ (bits >>> 32));
-		bits = Double.doubleToLongBits(m21);
-		result = 31 * result + (int) (bits ^ (bits >>> 32));
-		bits = Double.doubleToLongBits(m22);
-		result = 31 * result + (int) (bits ^ (bits >>> 32));
+		bits = Float.floatToIntBits(m20);
+		result = 31 * result + (int) (bits);
+		bits = Float.floatToIntBits(m21);
+		result = 31 * result + (int) (bits);
+		bits = Float.floatToIntBits(m22);
+		result = 31 * result + (int) (bits);
 
 		return result;
 	}

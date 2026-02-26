@@ -1,11 +1,11 @@
 package Math;
 
 public class ImplicitEquation{
-	TriFunction<Double, Double, Double, Double> func;
-	public ImplicitEquation(TriFunction<Double, Double, Double, Double> func){
+	TriFunction<Float, Float, Float, Float> func;
+	public ImplicitEquation(TriFunction<Float, Float, Float, Float> func){
 		this.func = func;
 	}
-	public double apply(double x, double y, double z){
+	public float apply(float x, float y, float z){
 		return func.apply(x, y, z);
 	}
 	@FunctionalInterface

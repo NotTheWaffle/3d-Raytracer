@@ -3,17 +3,17 @@ package Math;
 import java.util.Random;
 
 public class Vec3{
-	public final double x, y, z;
+	public final float x, y, z;
 	public static final Vec3 ZERO_VEC = new Vec3(0, 0, 0);
 
-	public Vec3(double x, double y, double z) {
+	public Vec3(float x, float y, float z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
 	}
 
 	public Vec3 normalize(){
-		double r = Math.sqrt(x*x + y*y + z*z);
+		float r = FloatMath.sqrt(x*x + y*y + z*z);
 		if (r == 0) return new Vec3(0, 0, 0);
 		return new Vec3(
 			x/r,
@@ -36,21 +36,21 @@ public class Vec3{
 			z - v.z
 		);
 	}
-	public Vec3 mul(double m){
+	public Vec3 mul(float m){
 		return new Vec3(
 			x * m,
 			y * m,
 			z * m
 		);
 	}
-	public double dot(Vec3 v){
+	public float dot(Vec3 v){
 		return x * v.x + y * v.y + z * v.z;
 	}
-	public double dist(Vec3 v){
-		double dx = x-v.x;
-		double dy = y-v.y;
-		double dz = z-v.z;
-		return Math.sqrt(dx*dx + dy*dy + dz*dz);
+	public float dist(Vec3 v){
+		float dx = x-v.x;
+		float dy = y-v.y;
+		float dz = z-v.z;
+		return (float) Math.sqrt(dx*dx + dy*dy + dz*dz);
 	}
 	public Vec3 cross(Vec3 v){
 		return new Vec3(
@@ -61,15 +61,15 @@ public class Vec3{
 	}
 
 	public static Vec3 random(Random random){
-		return new Vec3(random.nextDouble() - .5, random.nextDouble() - .5, random.nextDouble() - .5).normalize();
+		return new Vec3(random.nextFloat() - .5f, random.nextFloat() - .5f, random.nextFloat() - .5f).normalize();
 	}
 
 	@Override
 	public int hashCode(){
 		return
-			Long.hashCode(Double.doubleToRawLongBits(x)) ^
-			Long.hashCode(Double.doubleToRawLongBits(y)) ^
-			Long.hashCode(Double.doubleToRawLongBits(z));
+			Integer.hashCode(Float.floatToRawIntBits(x)) ^
+			Integer.hashCode(Float.floatToRawIntBits(y)) ^
+			Integer.hashCode(Float.floatToRawIntBits(z));
 	}
 	@Override
 	public boolean equals(Object o){

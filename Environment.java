@@ -1,4 +1,5 @@
 
+import Math.FloatMath;
 import Math.Vec3;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -7,13 +8,13 @@ import java.util.List;
 public class Environment{
 	public final Vec3 sunvec = new Vec3(0, 1, 1);;
 	
-	private final double[] sunColor = {1, 0.81876767, 0.53333336};
-	private final double[] groundColour = {0.35, 0.30, 0.35};
-	private final double[] skyColorHorizon = {1.0, 1.0, 1.0};
-	private final double[] skyColorZenith = {0.08, 0.37, 0.73};
+	private final float[] sunColor = {1, 0.81876767f, 0.53333336f};
+	private final float[] groundColour = {0.35f, 0.30f, 0.35f};
+	private final float[] skyColorHorizon = {1.0f, 1.0f, 1.0f};
+	private final float[] skyColorZenith = {0.08f, 0.37f, 0.73f};
 
-	private double sunInverseRadius = 200;	//bigger = smaller
-	private double sunIntensity = .25;		//bigger = brighter
+	private float sunInverseRadius = 200f;	//bigger = smaller
+	private float sunIntensity = .25f;		//bigger = brighter
 	private boolean background;
 	private boolean sun;
 	
@@ -27,7 +28,7 @@ public class Environment{
 		this.background = environment;
 		this.sun = !background;
 	}
-	public void addCornellBox(double innerWidth, double outerWidth){
+	public void addCornellBox(float innerWidth, float outerWidth){
 		//bottom
 		add(new RectangularPrism(-outerWidth/2, outerWidth/2, -outerWidth/2, -innerWidth/2, -outerWidth/2, outerWidth/2, Material.solid(Color.white)));
 		//left
@@ -42,18 +43,18 @@ public class Environment{
 		add(new RectangularPrism(-innerWidth/4, innerWidth/4, (innerWidth/2-innerWidth/16), innerWidth/2, -innerWidth/4, innerWidth/4, Material.LIGHT));
 	}
 	public void addSphereTest(){
-		add(new Sphere(new Vec3(0, 0, 2.5), 1, Material.solid(Color.RED)));
-		add(new Sphere(new Vec3(2.5, 0, 0), 1, Material.solid(Color.BLUE)));
-		add(new Sphere(new Vec3(-2.5, 0, 0), 1, Material.solid(Color.GREEN)));
+		add(new Sphere(new Vec3(0, 0, 2.5f), 1, Material.solid(Color.RED)));
+		add(new Sphere(new Vec3(2.5f, 0, 0), 1, Material.solid(Color.BLUE)));
+		add(new Sphere(new Vec3(-2.5f, 0, 0), 1, Material.solid(Color.GREEN)));
 		addFloor();
 	}
 	public void addFloor(){
-		add(new RectangularPrism(0, -1.5, 0, 20, 1, 20, Material.SOLID, 0));
+		add(new RectangularPrism(0, -1.5f, 0, 20, 1, 20, Material.SOLID, 0));
 	}
-	public void addHueSpheres(int count, double radius){
+	public void addHueSpheres(int count, float radius){
 		for (int i = 0; i < count; i++){
 			Color color = new Color(Color.HSBtoRGB((float)i/count, 1, 1));
-			add(new Sphere(new Transform().rotateY(i*2*Math.PI/count).applyTo(new Vec3(3, 0, 0)), radius, Material.light(color)));
+			add(new Sphere(new Transform().rotateY(i*2*FloatMath.PI/count).applyTo(new Vec3(3, 0, 0)), radius, Material.light(color)));
 		}
 	}
 	public void add(PhysicalObject object){
@@ -69,29 +70,29 @@ public class Environment{
 		}
 		return null;
 	}
-	public double[] computeSkyColor(Vec3 dir) {
+	public float[] computeSkyColor(Vec3 dir) {
 		// smoothstep(0, 0.4, dir.y)
-		double t0 = (dir.y) / 0.4;
-		t0 = Math.max(0.0, Math.min(1.0, t0));
-		t0 = t0 * t0 * (3.0 - 2.0 * t0);
-		double skyGradientT = Math.pow(t0, 0.35);
+		float t0 = (dir.y) / 0.4f;
+		t0 = (float) Math.max(0.0f, Math.min(1.0f, t0));
+		t0 = t0 * t0 * (3.0f - 2.0f * t0);
+		float skyGradientT = (float) Math.pow(t0, 0.35);
 
 		// lerp(skyColourHorizon, skyColourZenith, skyGradientT)
-		double[] skyGradient = new double[3];
+		float[] skyGradient = new float[3];
 		skyGradient[0] = skyColorHorizon[0] + (skyColorZenith[0] - skyColorHorizon[0]) * skyGradientT;
 		skyGradient[1] = skyColorHorizon[1] + (skyColorZenith[1] - skyColorHorizon[1]) * skyGradientT;
 		skyGradient[2] = skyColorHorizon[2] + (skyColorZenith[2] - skyColorHorizon[2]) * skyGradientT;
 
 		// smoothstep(-0.01, 0, dir.y)
-		double t1 = (dir.y + 0.01) / 0.01;
-		t1 = Math.max(0.0, Math.min(1.0, t1));
-		t1 = t1 * t1 * (3.0 - 2.0 * t1);
-		double groundToSkyT = t1;
-		double sunMask = (groundToSkyT >= 1.0) ? 1.0 : 0.0;
+		float t1 = (dir.y + 0.01f) / 0.01f;
+		t1 = (float) Math.max(0.0f, Math.min(1.0f, t1));
+		t1 = t1 * t1 * (3.0f - 2.0f * t1);
+		float groundToSkyT = t1;
+		float sunMask = (groundToSkyT >= 1.0f) ? 1.0f : 0.0f;
 
-		double sun = Math.pow(Math.max(0.0, dir.dot(sunvec)), 1000.0 / sunInverseRadius) * sunIntensity;
+		float sun = (float) Math.pow(Math.max(0.0, dir.dot(sunvec)), 1000.0 / sunInverseRadius) * sunIntensity;
 
-		double[] composite = new double[3];
+		float[] composite = new float[3];
 		composite[0] = groundColour[0] + (skyGradient[0] - groundColour[0]) * groundToSkyT + sun * sunColor[0] * sunMask;
 		composite[1] = groundColour[1] + (skyGradient[1] - groundColour[1]) * groundToSkyT + sun * sunColor[1] * sunMask;
 		composite[2] = groundColour[2] + (skyGradient[2] - groundColour[2]) * groundToSkyT + sun * sunColor[2] * sunMask;

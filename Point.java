@@ -17,7 +17,7 @@ public class Point {
 		this.color = c;
 		this.radius = radius;
 	}
-	public void render(WritableRaster raster, double[][] zBuffer, Viewport camera) {
+	public void render(WritableRaster raster, float[][] zBuffer, Viewport camera) {
 		Vec3 p = camera.applyTo(this.pos);
 		if (p.z < 0) return;
 
@@ -50,7 +50,7 @@ public class Point {
 			}
 		}
 	}
-	public static Vec3 project(Vec3 point, Transform cam, double focalLength){
+	public static Vec3 project(Vec3 point, Transform cam, float focalLength){
 		Vec3 projected = cam.applyTo(point);
 		return new Vec3(
 			focalLength * projected.x / projected.z,
