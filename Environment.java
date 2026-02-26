@@ -68,7 +68,6 @@ public class Environment{
 			}
 		}
 		return null;
-		
 	}
 	public double[] computeSkyColor(Vec3 dir) {
 		// smoothstep(0, 0.4, dir.y)
