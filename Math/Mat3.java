@@ -58,7 +58,7 @@ public class Mat3 {
 			a.m20*b.m02 + a.m21*b.m12 + a.m22*b.m22
 		);
 	}
-	public Vec3 transform(Vec3 v) {
+	public Vec3 mul(Vec3 v) {
 		return new Vec3(
 			v.x * m00 + v.y * m01 + v.z * m02,
 			v.x * m10 + v.y * m11 + v.z * m12,

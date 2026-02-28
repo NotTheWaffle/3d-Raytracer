@@ -103,7 +103,7 @@ public class ThreadedPathTracedGame extends Game{
 		}
 		for (PhysicalObject object : env.physicalObjects){
 			if (object instanceof Mesh mesh){
-				mesh.bvh.renderWireframe(raster, zBuffer, camera);
+				mesh.bvh.renderWireframe(raster, zBuffer, camera, 0);
 			}
 		}
 		return image;
@@ -151,7 +151,7 @@ public class ThreadedPathTracedGame extends Game{
 		long renderTime = System.nanoTime() - renderStart;
 		g2d.setColor(Color.WHITE);
 		g2d.drawString("Render (ms):"+renderTime/1_000_000.0,0,20);
-		g2d.drawString("Samples: "+pixelBuffer[0][0].samples, 0, 40);
+		g2d.drawString("Samples: "+pixelBuffer[0][0].getSamples(), 0, 40);
 		g2d.drawString(camera.toString(), 0, 60);
 	}
 	
@@ -162,10 +162,10 @@ public class ThreadedPathTracedGame extends Game{
 			for (int y = y1; y < y2; y += 1){
 				Vec3 vector;
 				if (camera.focus == 0){
-					vector = camera.rot.transform((new Vec3(x-camera.cx, camera.cy-y, camera.focalLength)).normalize());
+					vector = camera.rot.mul((new Vec3(x-camera.cx, camera.cy-y, camera.focalLength)).normalize());
 				} else {
 					origin = camera.translation.add(new Vec3((random.nextFloat()-.5f)*camera.focus, (random.nextFloat()-.5f)*camera.focus, (random.nextFloat()-.5f)*camera.focus));
-					Vec3 pixelPoint = camera.translation.add(camera.rot.transform(new Vec3(x-camera.cx, camera.cy-y, camera.focalLength).mul(camera.focusDistance/camera.focalLength)));
+					Vec3 pixelPoint = camera.translation.add(camera.rot.mul(new Vec3(x-camera.cx, camera.cy-y, camera.focalLength).mul(camera.focusDistance/camera.focalLength)));
 					vector = pixelPoint.sub(origin).normalize();
 				}
 				

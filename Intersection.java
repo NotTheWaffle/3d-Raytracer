@@ -1,10 +1,10 @@
 import Math.Vec3;
 
 public class Intersection {
-	public final Vec3 pos;
-	public final Material material;
-	public final Vec3 normal;
-	public final boolean backface;
+	protected Vec3 pos;
+	protected Material material;
+	protected Vec3 normal;
+	protected boolean backface;
 	public Intersection(Vec3 pos, Material material, Vec3 normal, boolean backface){
 		this.pos = pos;
 		this.material = material;

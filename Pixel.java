@@ -4,7 +4,7 @@ public class Pixel {
 	private int rColor;
 	private int gColor;
 	private int bColor;
-	public int samples;
+	private int samples;
 
 	public Pixel(){
 		this(new float[3], 0);
@@ -14,6 +14,12 @@ public class Pixel {
 		this.gColor = (int) (255 * color[1]);
 		this.bColor = (int) (255 * color[2]);
 		this.samples = weight;
+	}
+	public void addSample(float[] color){
+		rColor += (int) (255.0 * color[0]);
+		gColor += (int) (255.0 * color[1]);
+		bColor += (int) (255.0 * color[2]);
+		samples++;
 	}
 	public void addSample(int[] color, int weight){
 		this.rColor += color[0];
@@ -28,5 +34,8 @@ public class Pixel {
 	public void clear(){
 		rColor = gColor = bColor = 0;
 		samples = 0;
+	}
+	public int getSamples(){
+		return samples;
 	}
 }

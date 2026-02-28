@@ -4,18 +4,16 @@ import Math.Vec3;
 import java.awt.image.WritableRaster;
 
 public class Sphere extends PhysicalObject{
-	public final Vec3 point;
 	public final float radius;
 
 	public Sphere(Vec3 point, float radius, Material material){
-		super(material);
-		this.point = point;
+		super(material, new Transform().translate(point.x, point.y, point.z));
 		this.radius = radius;
 	}
 
 	@Override
 	public void renderRasterized(WritableRaster raster, float[][] zBuffer, Viewport camera) {
-		Vec3 p = camera.applyTo(this.point);
+		Vec3 p = camera.applyTo(transform.translation);
 		if (p.z < 0) return;
 		
 		int screenX = (int) camera.getX(p);
@@ -51,10 +49,10 @@ public class Sphere extends PhysicalObject{
 	}
 	
 	@Override
-	public Intersection getIntersection(Vec3 rayOrigin, Vec3 rayVector){
-		Vec3 l = rayOrigin.sub(point);
+	public Intersection getLocalIntersection(Vec3 rayOrigin, Vec3 rayDirection){
+		Vec3 l = rayOrigin;
 		
-		float b = 2 * rayVector.dot(l);
+		float b = 2 * rayDirection.dot(l);
 		float c = l.dot(l) - radius*radius;
 
 
@@ -72,9 +70,9 @@ public class Sphere extends PhysicalObject{
 		if (t1 > EPSILON && t1 < t) t = t1;
 
 		if (t == Float.POSITIVE_INFINITY) return null;
-		Vec3 intersectionPoint = rayOrigin.add(rayVector.mul(t));
-		Vec3 normal = intersectionPoint.sub(point).normalize();
+		Vec3 intersectionPoint = rayOrigin.add(rayDirection.mul(t));
+		Vec3 normal = intersectionPoint.normalize();
 		
-		return new Intersection(intersectionPoint, this.material, normal, normal.dot(rayVector) > 0);
+		return new Intersection(intersectionPoint, this.material, normal, normal.dot(rayDirection) > 0);
 	}
 }

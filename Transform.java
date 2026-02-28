@@ -13,7 +13,10 @@ public class Transform {
 	}
 
 	public Vec3 applyTo(Vec3 point){
-		return inv.transform(point.sub(translation));
+		return inv.mul(point.sub(translation));
+	}
+	public Vec3 unapplyTo(Vec3 point){
+		return translation.add(rot.mul(point));
 	}
 	
 	public Transform turnX(float pitch){
@@ -31,8 +34,8 @@ public class Transform {
 		inv = rot.transpose();
 		return this;
 	}
-	public Transform move(float forward, float right, float up){
-		Vec3 fixed = rot.transform(new Vec3(forward, right, up));
+	public Transform move(float right, float up, float forward){
+		Vec3 fixed = rot.mul(new Vec3(right, up, forward));
 		translation = translation.add(fixed);
 		return this;
 	}

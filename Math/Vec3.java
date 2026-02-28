@@ -50,7 +50,7 @@ public class Vec3{
 		float dx = x-v.x;
 		float dy = y-v.y;
 		float dz = z-v.z;
-		return (float) Math.sqrt(dx*dx + dy*dy + dz*dz);
+		return FloatMath.sqrt(dx*dx + dy*dy + dz*dz);
 	}
 	public Vec3 cross(Vec3 v){
 		return new Vec3(
@@ -61,7 +61,7 @@ public class Vec3{
 	}
 
 	public static Vec3 random(Random random){
-		return new Vec3(random.nextFloat() - .5f, random.nextFloat() - .5f, random.nextFloat() - .5f).normalize();
+		return new Vec3(random.nextFloat() - .5f, random.nextFloat() - .5f, random.nextFloat() - .5f);
 	}
 
 	@Override

@@ -30,9 +30,9 @@ public class BVH {
 		float xRange = bounds.maxX-bounds.minX;
 		float yRange = bounds.maxY-bounds.minY;
 		float zRange = bounds.maxZ-bounds.minZ;
-		if (xRange > yRange && xRange > zRange){
+		if (xRange >= yRange && xRange >= zRange){
 			splitX(triangles, xRange/2+bounds.minX, side0, side1);
-		} else if (yRange > xRange && yRange > zRange){
+		} else if (yRange >= xRange && yRange >= zRange){
 			splitY(triangles, yRange/2+bounds.minY, side0, side1);
 		} else {
 			splitZ(triangles, zRange/2+bounds.minZ, side0, side1);
@@ -78,7 +78,7 @@ public class BVH {
 		}
 	}
 	
-	public Intersection getIntersection(Vec3 origin, Vec3 direction){
+	public Intersection getDeficientIntersection(Vec3 origin, Vec3 direction){
 		if (bounds.testIntersection(origin, direction) < 0) return null;
 		Intersection intersection = null;
 		if (triangles == null){
@@ -99,18 +99,18 @@ public class BVH {
 				farTime = tempTime;
 			}
 			
-			intersection = closeTime < 0 ? null : close.getIntersection(origin, direction);
+			intersection = closeTime < 0 ? null : close.getDeficientIntersection(origin, direction);
 			if (intersection == null){
-				intersection = farTime < 0 ? null : far.getIntersection(origin, direction);
+				intersection = farTime < 0 ? null : far.getDeficientIntersection(origin, direction);
 			} else if (intersection.pos.dist(origin) > farTime){
-				Intersection localIntersection = farTime < 0 ? null : far.getIntersection(origin, direction);
+				Intersection localIntersection = farTime < 0 ? null : far.getDeficientIntersection(origin, direction);
 				if (localIntersection != null && origin.dist(intersection.pos) > origin.dist(localIntersection.pos)){
 					intersection = localIntersection;
 				}
 			}
 		} else {
 			for (Triangle tri : triangles){
-				Intersection localIntersection = tri.getIntersection(origin, direction);
+				Intersection localIntersection = tri.getDeficientIntersection(origin, direction);
 				if (localIntersection == null || (intersection != null && origin.dist(intersection.pos) < origin.dist(localIntersection.pos))) continue;
 				intersection = localIntersection;
 			}
@@ -120,15 +120,22 @@ public class BVH {
 	public float testIntersection(Vec3 origin, Vec3 direction){
 		return bounds.testIntersection(origin, direction.normalize());
 	}
-	public void renderWireframe(WritableRaster raster, float[][] zBuffer, Viewport camera) {
-		if (null == null) return;
+	public void renderWireframe(WritableRaster raster, float[][] zBuffer, Viewport camera, int depth) {
+		
 		if (node0 != null) {
-			node0.renderWireframe(raster, zBuffer, camera);
+			node0.renderWireframe(raster, zBuffer, camera, depth-1);
 		}
 		if (node1 != null) {
-			node1.renderWireframe(raster, zBuffer, camera);
+			node1.renderWireframe(raster, zBuffer, camera, depth-1);
 		}
 		if (true){
+			int[] color;
+			if (depth == 0){
+				color = new int[] {255, 255, 255, 255};
+			} else {
+				color = new int[] {128, 128, 128, 128};
+			}
+
 			Vec3 p0 = new Vec3(bounds.maxX, bounds.maxY, bounds.maxZ);
 			Vec3 p1 = new Vec3(bounds.maxX, bounds.maxY, bounds.minZ);
 			Vec3 p2 = new Vec3(bounds.maxX, bounds.minY, bounds.maxZ);
@@ -139,20 +146,20 @@ public class BVH {
 			Vec3 p6 = new Vec3(bounds.minX, bounds.minY, bounds.maxZ);
 			Vec3 p7 = new Vec3(bounds.minX, bounds.minY, bounds.minZ);
 			// top face
-			Ray.render(p0, p1, raster, zBuffer, camera);
-			Ray.render(p1, p3, raster, zBuffer, camera);
-			Ray.render(p3, p2, raster, zBuffer, camera);
-			Ray.render(p2, p0, raster, zBuffer, camera);
+			Ray.render(p0, p1, raster, zBuffer, camera, color);
+			Ray.render(p1, p3, raster, zBuffer, camera, color);
+			Ray.render(p3, p2, raster, zBuffer, camera, color);
+			Ray.render(p2, p0, raster, zBuffer, camera, color);
 			// bottom face
-			Ray.render(p4, p5, raster, zBuffer, camera);
-			Ray.render(p5, p7, raster, zBuffer, camera);
-			Ray.render(p7, p6, raster, zBuffer, camera);
-			Ray.render(p6, p4, raster, zBuffer, camera);
+			Ray.render(p4, p5, raster, zBuffer, camera, color);
+			Ray.render(p5, p7, raster, zBuffer, camera, color);
+			Ray.render(p7, p6, raster, zBuffer, camera, color);
+			Ray.render(p6, p4, raster, zBuffer, camera, color);
 			// sides
-			Ray.render(p0, p4, raster, zBuffer, camera);
-			Ray.render(p1, p5, raster, zBuffer, camera);
-			Ray.render(p2, p6, raster, zBuffer, camera);
-			Ray.render(p3, p7, raster, zBuffer, camera);
+			Ray.render(p0, p4, raster, zBuffer, camera, color);
+			Ray.render(p1, p5, raster, zBuffer, camera, color);
+			Ray.render(p2, p6, raster, zBuffer, camera, color);
+			Ray.render(p3, p7, raster, zBuffer, camera, color);
 		}
 	}
 }

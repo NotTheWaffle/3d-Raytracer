@@ -13,6 +13,14 @@ public final class AABB{
 		minY = maxY = y;
 		minZ = maxZ = z;
 	}
+	public AABB(float minX, float minY, float minZ, float maxX, float maxY, float maxZ){
+		this.minX = Math.min(minX, maxX);
+		this.maxX = Math.max(minX, maxX);
+		this.minY = Math.min(minY, maxX);
+		this.maxY = Math.max(minY, maxX);
+		this.minZ = Math.min(minZ, maxX);
+		this.maxZ = Math.max(minZ, maxX);
+	}
 	public AABB(List<Vec3> points){
 		this();
 		for (Vec3 p : points){
@@ -26,7 +34,6 @@ public final class AABB{
 			addPoint(tri.p3);
 		}
 		return this;
-
 	}
 	public AABB addTriangles(Triangle[] tris){
 		for (Triangle tri : tris){

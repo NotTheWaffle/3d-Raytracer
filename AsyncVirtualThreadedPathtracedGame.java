@@ -17,20 +17,20 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 	// this is only for rasterized rendering
 	private final float[][] zBuffer;
 	// this is distance per 16 ms
-	public final float speed = .02f;
-	public final float rotSpeed = .03f;
+	private final float speed = .02f;
+	private final float rotSpeed = .03f;
 	// these represent the entire model
 	private final Viewport camera;
 	private final Environment env;
 
-	public boolean raytrace = false;
-	public final Pixel[][] pixelBuffer;
+	private boolean raytrace;
+	private final Pixel[][] pixelBuffer;
 
-	public List<Thread> threads;
+	private List<Thread> threads;
 
 	public AsyncVirtualThreadedPathtracedGame(Viewport camera, Environment env){
 		super(camera.screenWidth, camera.screenHeight);
-		
+
 		this.env = env;
 		this.camera = camera;
 	
@@ -54,20 +54,23 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 		float relativeSpeed = (float) (this.speed * dt/16.0f);
 		float relativeRotSpeed = (float) (this.rotSpeed * dt/16.0f);
 
-		if (input.keys['W']) 			{resetPixelBuffer(); camera.moveZ( relativeSpeed);}
-		if (input.keys['A']) 			{resetPixelBuffer(); camera.moveX(-relativeSpeed);}
-		if (input.keys['S']) 			{resetPixelBuffer(); camera.moveZ(-relativeSpeed);}
-		if (input.keys['D']) 			{resetPixelBuffer(); camera.moveX( relativeSpeed);}
-		if (input.keys[' ']) 			{resetPixelBuffer(); camera.moveY( relativeSpeed);}
-		if (input.keys[Input.SHIFT]) 	{resetPixelBuffer(); camera.moveY(-relativeSpeed);}
+		Transform transform = camera;
+		if (input.keys['1']) transform = env.physicalObjects.get(1).transform;
 
-		if (input.keys[Input.UP_ARROW]) 	{resetPixelBuffer(); camera.turnX( relativeRotSpeed);}
-		if (input.keys[Input.DOWN_ARROW]) 	{resetPixelBuffer(); camera.turnX(-relativeRotSpeed);}
-		if (input.keys[Input.LEFT_ARROW]) 	{resetPixelBuffer(); camera.turnY( relativeRotSpeed);}
-		if (input.keys[Input.RIGHT_ARROW]) 	{resetPixelBuffer(); camera.turnY(-relativeRotSpeed);}
-		if (input.keys['Q']) 				{resetPixelBuffer(); camera.turnZ(-relativeRotSpeed);}
-		if (input.keys['E']) 				{resetPixelBuffer(); camera.turnZ( relativeRotSpeed);}
+		if (input.keys['W']) 			{resetPixelBuffer(); transform.move(0, 0, relativeSpeed);}
+		if (input.keys['A']) 			{resetPixelBuffer(); transform.move(-relativeSpeed, 0, 0);}
+		if (input.keys['S']) 			{resetPixelBuffer(); transform.move(0, 0, -relativeSpeed);}
+		if (input.keys['D']) 			{resetPixelBuffer(); transform.move(relativeSpeed, 0, 0);}
+		if (input.keys[' ']) 			{resetPixelBuffer(); transform.move(0, relativeSpeed, 0);}
+		if (input.keys[Input.SHIFT]) 	{resetPixelBuffer(); transform.move(0, -relativeSpeed, 0);}
 
+		if (input.keys[Input.UP_ARROW]) 	{resetPixelBuffer(); transform.turnX( relativeRotSpeed);}
+		if (input.keys[Input.DOWN_ARROW]) 	{resetPixelBuffer(); transform.turnX(-relativeRotSpeed);}
+		if (input.keys[Input.LEFT_ARROW]) 	{resetPixelBuffer(); transform.turnY( relativeRotSpeed);}
+		if (input.keys[Input.RIGHT_ARROW]) 	{resetPixelBuffer(); transform.turnY(-relativeRotSpeed);}
+		if (input.keys['Q']) 				{resetPixelBuffer(); transform.turnZ(-relativeRotSpeed);}
+		if (input.keys['E']) 				{resetPixelBuffer(); transform.turnZ( relativeRotSpeed);}
+		
 		if (input.keys['[']) {
 			if (raytrace){
 				resetPixelBuffer();
@@ -122,19 +125,22 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 		}
 		for (PhysicalObject object : env.physicalObjects){
 			if (object instanceof Mesh mesh){
-				mesh.bvh.renderWireframe(raster, zBuffer, camera);
+			//	mesh.bvh.renderWireframe(raster, zBuffer, camera, 5);
 			}
 		}
 		return image;
 	}
 	private void renderPathtraced(){
+		if (nextFrame == null) nextFrame = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		WritableRaster raster = nextFrame.getRaster();
 		for (int y = 0; y < pixelBuffer.length; y++){
 			for (int x = 0; x < pixelBuffer[y].length; x++){
 				raster.setPixel(x, y, pixelBuffer[y][x].getColor());
 			}
-		}	
+		}
 	}
+
+
 
 	private void beginPathtracing(int threadCount){
 		stopPathtracing();
@@ -170,23 +176,16 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 			for (int y = y1; y < y2; y += dy){
 				Vec3 vector;
 				if (camera.focus == 0){
-					vector = camera.rot.transform((new Vec3(x-camera.cx, camera.cy-y, camera.focalLength)).normalize());
+					vector = camera.rot.mul((new Vec3(x-camera.cx, camera.cy-y, camera.focalLength)).normalize());
 				} else {
 					origin = camera.translation.add(new Vec3((random.nextFloat()-.5f)*camera.focus, (random.nextFloat()-.5f)*camera.focus, (random.nextFloat()-.5f)*camera.focus));
-					Vec3 pixelPoint = camera.translation.add(camera.rot.transform(new Vec3(x-camera.cx, camera.cy-y, camera.focalLength).mul(camera.focusDistance/camera.focalLength)));
+					Vec3 pixelPoint = camera.translation.add(camera.rot.mul(new Vec3(x-camera.cx, camera.cy-y, camera.focalLength).mul(camera.focusDistance/camera.focalLength)));
 					vector = pixelPoint.sub(origin).normalize();
 				}
 				
 				float[] col = Ray.trace(origin, vector, env, 10, random);
 				
-				pixelBuffer[y][x].addSample(
-					new int[] {
-						(int) (255.0 * col[0]),
-						(int) (255.0 * col[1]),
-						(int) (255.0 * col[2])
-					},
-					1
-				);
+				pixelBuffer[y][x].addSample(col);
 			}
 		}
 	}

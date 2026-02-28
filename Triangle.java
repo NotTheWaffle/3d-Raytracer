@@ -91,7 +91,7 @@ public final class Triangle{
 	private static float edge(int x1, int y1, int x2, int y2, int x, int y) {
 		return (x - x1) * (y2 - y1) - (y - y1) * (x2 - x1);
 	}
-	public Intersection getIntersection(Vec3 rayOrigin, Vec3 rayDirection){
+	public Intersection getDeficientIntersection(Vec3 rayOrigin, Vec3 rayDirection){
 		Vec3 edge1 = p2.sub(p1);
 		Vec3 edge2 = p3.sub(p1);
 		Vec3 h = rayDirection.cross(edge2);

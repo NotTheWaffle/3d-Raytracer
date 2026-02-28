@@ -16,7 +16,7 @@ public final class Ray {
 			// find nearest intersection
 			Intersection intersection = null;
 			for (PhysicalObject p : env.physicalObjects){
-				Intersection localIntersection = p.getIntersection(rayOrigin, rayDirection);
+				Intersection localIntersection = p.getTransformedintersection(rayOrigin, rayDirection);
 				if (localIntersection == null) continue;
 				if (intersection == null || rayOrigin.dist(intersection.pos) > rayOrigin.dist(localIntersection.pos)){
 					intersection = localIntersection;
@@ -86,7 +86,6 @@ public final class Ray {
 			} else {
 				if (intersection.backface){
 					normal = normal.mul(-1);
-				//	return new float[] {0, 1, 0};
 				}
 				Vec3 diffuseDirection = getDiffuseReflectionVector(normal, random);
 				
@@ -128,7 +127,7 @@ public final class Ray {
 		return rayDirection.sub(normal.mul(2 * rayDirection.dot(normal))).normalize();
 	}
 	private static Vec3 getDiffuseReflectionVector(Vec3 normal, Random random){
-		return normal.add(Vec3.random(random)).normalize();
+		return normal.add(Vec3.random(random).normalize()).normalize();
 	}
 	private static Vec3 getRefractionVector(Vec3 rayDirection, Vec3 normal, float eta, float cosI, float cosT){
 		return rayDirection.mul(eta).add(normal.mul(eta * cosI - cosT)).normalize();
@@ -144,7 +143,7 @@ public final class Ray {
 	}
 
 
-	public static void render(Vec3 start, Vec3 end, WritableRaster raster, float[][] zBuffer, Viewport camera) {
+	public static void render(Vec3 start, Vec3 end, WritableRaster raster, float[][] zBuffer, Viewport camera, int[] color) {
 		Vec3 projectedStart = camera.applyTo(start);
 		Vec3 projectedEnd = camera.applyTo(end);
 		
@@ -173,13 +172,6 @@ public final class Ray {
 
 		int width = raster.getWidth();
 		int height = raster.getHeight();
-
-		int[] color = {
-			255,
-			255,
-			255,
-			255
-		};
 		
 		for (float x = x1, y = y1; x < x2; x+=dx, y+=dy){
 			if (x < 0 || (int)x >= width || y < 0 || (int)y >= height){
