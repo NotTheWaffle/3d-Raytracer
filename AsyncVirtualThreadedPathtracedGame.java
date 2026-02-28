@@ -49,13 +49,24 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 		return "Pathtraced 3d";
 	}
 	
+	private int selected = 0;
 	@Override
 	public void tick(double dt){
 		float relativeSpeed = (float) (this.speed * dt/16.0f);
 		float relativeRotSpeed = (float) (this.rotSpeed * dt/16.0f);
 
 		Transform transform = camera;
-		if (input.keys['1']) transform = env.physicalObjects.get(1).transform;
+		for (char a = '0'; a <= '9'; a++){
+			if (input.keys[a]){
+				selected = a-'0';
+			}
+		}
+		if (selected != 0){
+			if (selected > env.physicalObjects.size()){
+				selected = env.physicalObjects.size();
+			}
+			transform = env.physicalObjects.get(selected-1).transform;
+		}
 
 		if (input.keys['W']) 			{resetPixelBuffer(); transform.move(0, 0, relativeSpeed);}
 		if (input.keys['A']) 			{resetPixelBuffer(); transform.move(-relativeSpeed, 0, 0);}
@@ -70,7 +81,7 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 		if (input.keys[Input.RIGHT_ARROW]) 	{resetPixelBuffer(); transform.turnY(-relativeRotSpeed);}
 		if (input.keys['Q']) 				{resetPixelBuffer(); transform.turnZ(-relativeRotSpeed);}
 		if (input.keys['E']) 				{resetPixelBuffer(); transform.turnZ( relativeRotSpeed);}
-		
+
 		if (input.keys['[']) {
 			if (raytrace){
 				resetPixelBuffer();

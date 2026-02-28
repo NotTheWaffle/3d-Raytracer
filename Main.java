@@ -11,7 +11,7 @@ public class Main {
 
 
 		Environment env = new Environment(true);
-		env.add(MeshLoader.loadObj("Models/tf2/scout.obj", new Transform(), 1, Material.MIRROR));
+		env.add(MeshLoader.loadObj("Models/teapot.obj", new Transform(), 1, Material.SOLID));
 		env.addSphereTest();
 		env.addFloor();
 
