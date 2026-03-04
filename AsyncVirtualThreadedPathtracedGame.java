@@ -7,15 +7,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.imageio.ImageIO;
 
 public class AsyncVirtualThreadedPathtracedGame extends Game{
-	
-	// this is only for rasterized rendering
-	private final float[][] zBuffer;
 	// this is distance per 16 ms
 	private final float speed = .02f;
 	private final float rotSpeed = .03f;
@@ -28,13 +26,15 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 
 	private List<Thread> threads;
 
+	private volatile int modCount = 0;
+	public List<Long> timeSamples = Collections.synchronizedList(new ArrayList<>());
+
 	public AsyncVirtualThreadedPathtracedGame(Viewport camera, Environment env){
 		super(camera.screenWidth, camera.screenHeight);
 
 		this.env = env;
 		this.camera = camera;
 	
-		zBuffer = new float[width][height];
 
 		pixelBuffer = new Pixel[height][width];
 		for (Pixel[] row : pixelBuffer) {
@@ -62,10 +62,11 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 			}
 		}
 		if (selected != 0){
-			if (selected > env.physicalObjects.size()){
-				selected = env.physicalObjects.size();
+			int a = selected;
+			if (a > env.physicalObjects.size()){
+				a = env.physicalObjects.size();
 			}
-			transform = env.physicalObjects.get(selected-1).transform;
+			transform = env.physicalObjects.get(a-1).transform;
 		}
 
 		if (input.keys['W']) 			{resetPixelBuffer(); transform.move(0, 0, relativeSpeed);}
@@ -99,6 +100,8 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 
 	private void resetPixelBuffer(){
 		if (!raytrace) return;
+		timeSamples.clear();
+		modCount++;
 		for (Pixel[] row : pixelBuffer) {
 			for (Pixel element : row) {
 				element.clear();
@@ -122,21 +125,32 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 		} else {
 			nextFrame = renderRasterized();
 		}
+		if (timeSamples.isEmpty()){
+			this.debug ="";
+			return;
+		}
+		long time = 0;
+		for (int i = 0; i < timeSamples.size(); i++){
+			time += timeSamples.get(i);
+		}
+		time /= timeSamples.size();
+		super.debug = "frame: "+(time/1_000_000.0);
 	}
 
 	private BufferedImage renderRasterized(){
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		WritableRaster raster = image.getRaster();
+		float[][] zBuffer = new float[width][height];
 		for (int x = 0; x < width; x++) {
 			Arrays.fill(zBuffer[x], Float.POSITIVE_INFINITY);
 		}
 		
 		for (PhysicalObject object : env.physicalObjects){
-			object.renderRasterized(raster, zBuffer, camera);
-		}
-		for (PhysicalObject object : env.physicalObjects){
+			if (object == null) continue;
 			if (object instanceof Mesh mesh){
-			//	mesh.bvh.renderWireframe(raster, zBuffer, camera, 5);
+				mesh.bvh.renderWireframe(raster, zBuffer, camera, (int) (input.mouseWheel));
+			} else {
+				object.renderRasterized(raster, zBuffer, camera);
 			}
 		}
 		return image;
@@ -146,11 +160,11 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 		WritableRaster raster = nextFrame.getRaster();
 		for (int y = 0; y < pixelBuffer.length; y++){
 			for (int x = 0; x < pixelBuffer[y].length; x++){
+				if (pixelBuffer[y][x].getSamples() == 0) continue;
 				raster.setPixel(x, y, pixelBuffer[y][x].getColor());
 			}
 		}
 	}
-
 
 
 	private void beginPathtracing(int threadCount){
@@ -162,22 +176,30 @@ public class AsyncVirtualThreadedPathtracedGame extends Game{
 				final int y_f = y;
 				Thread t = new Thread(() -> {
 					Random random = ThreadLocalRandom.current();
-					while (!Thread.currentThread().isInterrupted()){
+					System.out.println("Thread starting");
+					while (!Thread.currentThread().isInterrupted() && raytrace){
+						int startModCount = modCount;
+						long start = System.nanoTime();
 						pathtrace(x_f, y_f, camera.screenWidth, camera.screenHeight, partitions, partitions, random);
+						long end = System.nanoTime();
+						if (modCount == startModCount){
+							timeSamples.add(end-start);
+						}
 					}
+					System.out.println("Thread ending");
 				});
 				threads.add(t);
 			}
 		}
+		System.out.println("Starting "+ threads.size()+" virtual threads");
 		threads.forEach(t -> Thread.startVirtualThread(t));
-		System.out.println("Started "+ threads.size()+" virtual threads");
 	}
 	private void stopPathtracing(){
 		if (threads == null) threads = new ArrayList<>();
 		if (threads.isEmpty()) return;
 
+		System.out.println("Dispatching "+threads.size()+" threads");
 		threads.forEach(t -> t.interrupt());
-		System.out.println("Dispatched "+threads.size()+" threads");
 		threads.clear();
 	}
 

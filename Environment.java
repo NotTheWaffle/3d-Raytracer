@@ -92,12 +92,12 @@ public class Environment{
 		float groundToSkyT = t1;
 		float sunMask = (groundToSkyT >= 1.0f) ? 1.0f : 0.0f;
 
-		float sun = FloatMath.pow(Math.max(0f, dir.dot(sunvec)), 1000f / sunInverseRadius) * sunIntensity;
+		float sunniness = FloatMath.pow(Math.max(0f, dir.dot(sunvec)), 1000f / sunInverseRadius) * sunIntensity;
 
 		float[] composite = new float[3];
-		composite[0] = groundColour[0] + (skyGradient[0] - groundColour[0]) * groundToSkyT + sun * sunColor[0] * sunMask;
-		composite[1] = groundColour[1] + (skyGradient[1] - groundColour[1]) * groundToSkyT + sun * sunColor[1] * sunMask;
-		composite[2] = groundColour[2] + (skyGradient[2] - groundColour[2]) * groundToSkyT + sun * sunColor[2] * sunMask;
+		composite[0] = groundColour[0] + (skyGradient[0] - groundColour[0]) * groundToSkyT + sunniness * sunColor[0] * sunMask;
+		composite[1] = groundColour[1] + (skyGradient[1] - groundColour[1]) * groundToSkyT + sunniness * sunColor[1] * sunMask;
+		composite[2] = groundColour[2] + (skyGradient[2] - groundColour[2]) * groundToSkyT + sunniness * sunColor[2] * sunMask;
 		
 		if (composite[0] > 1) composite[0] = 1;
 		if (composite[1] > 1) composite[1] = 1;

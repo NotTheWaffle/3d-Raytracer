@@ -40,7 +40,7 @@ public final class Ray {
 			Vec3 nextDirection;
 			boolean applyColor = false;
 			if (material.transparent){
-				// i didn't figure this stuff out cuz i don't know phyisics (see sebastion lagues stuff)
+				// handle transparent object
 				Vec3 I = rayDirection.normalize();
 				Vec3 N = normal.normalize();
 
@@ -87,14 +87,14 @@ public final class Ray {
 				if (intersection.backface){
 					normal = normal.mul(-1);
 				}
-				Vec3 diffuseDirection = getDiffuseReflectionVector(normal, random);
+				Vec3 diffuseDirection = normal.add(getDiffuseReflectionVector(normal, random)).normalize();
 				
 				if (random.nextFloat() < material.specularityChance){
 					Vec3 specularDirection = getSpecularReflectionVector(rayDirection, normal);
 					nextDirection = lerp(diffuseDirection, specularDirection, material.specularity).normalize();
 					applyColor = false;
 				} else {
-					nextDirection = diffuseDirection.normalize();
+					nextDirection = diffuseDirection;
 					applyColor = true;
 				}
 			}
@@ -126,9 +126,13 @@ public final class Ray {
 	private static Vec3 getSpecularReflectionVector(Vec3 rayDirection, Vec3 normal){
 		return rayDirection.sub(normal.mul(2 * rayDirection.dot(normal))).normalize();
 	}
+
 	private static Vec3 getDiffuseReflectionVector(Vec3 normal, Random random){
-		return normal.add(Vec3.random(random).normalize()).normalize();
+		Vec3 vec = Vec3.random(random).normalize();
+		if (vec.dot(normal) < 0) vec = vec.mul(-1);
+		return vec;
 	}
+
 	private static Vec3 getRefractionVector(Vec3 rayDirection, Vec3 normal, float eta, float cosI, float cosT){
 		return rayDirection.mul(eta).add(normal.mul(eta * cosI - cosT)).normalize();
 	}
@@ -177,12 +181,14 @@ public final class Ray {
 			if (x < 0 || (int)x >= width || y < 0 || (int)y >= height){
 				break;
 			}
+			zBuffer[(int)x][(int)y] = 0f;
 			raster.setPixel((int)x, (int)y, color);
 		}
 		for (float x = x2, y = y2; x > x1; x-=dx, y-=dy){
 			if (x < 0 || (int)x >= width || y < 0 || y >= height){
 				break;
 			}
+			zBuffer[(int)x][(int)y] = 0f;
 			raster.setPixel((int)x, (int)y, color);
 		}
 	}

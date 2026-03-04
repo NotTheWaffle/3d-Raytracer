@@ -6,8 +6,14 @@ import java.awt.image.WritableRaster;
 public class Sphere extends PhysicalObject{
 	public final float radius;
 
-	public Sphere(Vec3 point, float radius, Material material){
-		super(material, new Transform().translate(point.x, point.y, point.z));
+	public Sphere(float radius, Material material){
+		this(new Transform(), radius, material);
+	}
+	public Sphere(Vec3 origin, float radius, Material material){
+		this(new Transform().translate(origin.x, origin.y, origin.z), radius, material);
+	}
+	public Sphere(Transform transform, float radius, Material material){
+		super(material, transform);
 		this.radius = radius;
 	}
 

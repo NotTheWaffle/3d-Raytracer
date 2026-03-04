@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BVH {
-	public static final int MAX_TRIANGLES = 10;
+	public static final int MAX_TRIANGLES = 20;
 	public static final int MAX_DEPTH = 30;
 	private BVH node0;
 	private BVH node1;
@@ -128,7 +128,10 @@ public class BVH {
 		if (node1 != null) {
 			node1.renderWireframe(raster, zBuffer, camera, depth-1);
 		}
-		if (true){
+		if (depth < 0){
+			return;
+		}
+		if (depth == 0 || (node0 == null && node1 == null)){
 			int[] color;
 			if (depth == 0){
 				color = new int[] {255, 255, 255, 255};

@@ -7,8 +7,14 @@ public class Transform {
 	public Mat3 rot;
 	public Mat3 inv;
 	public Transform(){
-		this.translation = new Vec3(0, 0, 0);
-		this.rot = Mat3.IDENTITY;
+		this(new Vec3(0, 0, 0), Mat3.IDENTITY);
+	}
+	public Transform(float x, float y, float z){
+		this(new Vec3(x, y, z), Mat3.IDENTITY);
+	}
+	private Transform(Vec3 translation, Mat3 rot){
+		this.translation = translation;
+		this.rot = rot;
 		this.inv = rot.transpose();
 	}
 
